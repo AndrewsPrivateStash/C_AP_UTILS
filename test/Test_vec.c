@@ -1,5 +1,5 @@
 /*
-    test the various pawnvec functions
+    test the various vector functions
 */
 
 #include <unity/unity.h>

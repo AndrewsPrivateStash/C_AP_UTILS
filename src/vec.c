@@ -1,7 +1,7 @@
 /*  vectors
     generic vector
         > processes data as bytes using void pointers
-        > assumes al elements are of the same type
+        > assumes all elements are of the same type
 
 */
 
