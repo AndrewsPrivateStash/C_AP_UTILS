@@ -1,11 +1,11 @@
-/*  vectors
-    generic vector
-        > processes data as bytes using void pointers
-        > assumes all elements are of the same type
-
-
-    - add map to vectors and lists
-*/
+/*
+ *  vectors
+ *  generic vector
+ *      > processes data as bytes using void pointers
+ *      > assumes all elements are of the same type
+ *
+ *      - adding map_new, filter, and insert
+ */
 
 #include "../include/aputils.h"
 
@@ -101,6 +101,31 @@ UTIL_ERR vector_add_front(Vector *v, void *elem) {
 }
 
 
+UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx) {
+    if (!v) return E_EMPTY_VEC;
+    if (!elem) return E_EMPTY_ARG;
+    if (v->size == v->cap) vector_resize(v);
+
+    // move all elements down one
+    for (size_t i = v->size; i > idx; i--) {
+        if (!memcpy((char*)v->data + i * v->elem_size,
+                    (char*)v->data + (i-1) * v->elem_size,
+                    v->elem_size)) {
+            return E_MEMCOPY;
+        }
+    }
+
+    // place new element at idx
+    if (!memcpy((char*)v->data + idx * v->elem_size, elem, v->elem_size)) {
+        return E_MEMCOPY;
+    }
+    v->size++;
+    
+    return E_SUCCESS;
+
+}
+
+
 void *vector_get(Vector *v, size_t idx) {
     if (!v) return NULL;
     if (idx > v->size -1) return NULL;
@@ -163,9 +188,8 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*)) {
 
 
 // ###################### GENERIC VECTOR ######################
-
-
 // ###################### i32 VECTOR ######################
+
 Vec_i32 *vec_i32_new(size_t cap) {
     if (cap < 1) {
         return (Vec_i32*)0;  // caller checks NULL
@@ -238,6 +262,24 @@ UTIL_ERR vec_i32_add_front(Vec_i32 *v, int32_t elem) {
 }
 
 
+UTIL_ERR vec_i32_insert(Vec_i32 *v, int32_t elem, size_t idx) {
+    if (!v) return E_EMPTY_VEC;
+    if (v->size == v->cap) vec_i32_resize(v);
+
+    // move all elements down one
+    for (size_t i = v->size; i > idx; i--) {
+        v->data[i] = v->data[i-1];
+    }
+
+    // place new element at idx
+    v->data[idx] = elem;
+    v->size++;
+    
+    return E_SUCCESS;
+
+}
+
+
 int32_t vec_i32_get(Vec_i32 *v, size_t idx, UTIL_ERR *e) {
     if (!v) {
         *e = E_EMPTY_VEC;
@@ -299,8 +341,11 @@ UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*)) {
     return E_SUCCESS;
 }
 
-
 // ###################### i32 VECTOR ######################
+// ###################### char VECTOR ######################
 
+
+
+// ###################### char VECTOR ######################
 
 

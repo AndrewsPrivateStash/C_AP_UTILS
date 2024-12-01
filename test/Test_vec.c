@@ -1,6 +1,6 @@
 /*
-    test the various vector functions
-*/
+ *    test the various vector functions
+ */
 
 #include <unity/unity.h>
 #include <stdio.h>
@@ -38,7 +38,7 @@ void test_function_vector_clear(void) {
     int tmp[] = {5, 1000};
 
     // initial capacity and size check
-    Vector *tstvec = vector_new(sizeof(size_t), 100);
+    Vector *tstvec = vector_new(sizeof(int), 100);
     vector_add_back(tstvec, &tmp[0]);
     vector_add_back(tstvec, &tmp[1]);
 
@@ -58,15 +58,15 @@ void test_function_vector_add_back(void) {
     int tmp[] = {5, 1000};
 
     // initial capacity and size check
-    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    Vector *tstvec = vector_new(sizeof(int), 1);
     UTIL_ERR e = vector_add_back(tstvec, &tmp[0]);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     e = vector_add_back(tstvec, &tmp[1]);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     TEST_ASSERT_EQUAL_INT32(2, tstvec->size);
-    TEST_ASSERT_EQUAL_INT32(tmp[0], *((size_t*)tstvec->data) );
-    TEST_ASSERT_EQUAL_INT32(tmp[1], *((size_t*)(
+    TEST_ASSERT_EQUAL_INT32(tmp[0], *((int*)tstvec->data) );
+    TEST_ASSERT_EQUAL_INT32(tmp[1], *((int*)(
         (char*)tstvec->data + 1 * tstvec->elem_size
     )) );
 
@@ -79,19 +79,42 @@ void test_function_vector_add_front(void) {
 
     int tmp[] = {5, 1000};
 
-    // initial capacity and size check
-    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    Vector *tstvec = vector_new(sizeof(int), 1);
     UTIL_ERR e = vector_add_front(tstvec, &tmp[0]);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     e = vector_add_front(tstvec, &tmp[1]);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     TEST_ASSERT_EQUAL_INT32(2, tstvec->size);
-    TEST_ASSERT_EQUAL_INT32(tmp[1], *((size_t*)tstvec->data) );
-    TEST_ASSERT_EQUAL_INT32(tmp[0], *((size_t*)(
+    TEST_ASSERT_EQUAL_INT32(tmp[1], *((int*)tstvec->data) );
+    TEST_ASSERT_EQUAL_INT32(tmp[0], *((int*)(
         (char*)tstvec->data + 1 * tstvec->elem_size
     )) );
 
+    vector_free(tstvec);
+
+}
+
+
+void test_function_vector_insert(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<10; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+
+    int ins_val = -100;
+    UTIL_ERR e = vector_insert(tstvec, &ins_val, 5);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(ins_val, *((int*)(
+        (char*)tstvec->data + 5 * tstvec->elem_size
+    )) );
+    TEST_ASSERT_EQUAL_INT32(tmp[9], *((int*)(
+        (char*)tstvec->data + 10 * tstvec->elem_size
+    )) );
+    
     vector_free(tstvec);
 
 }
@@ -102,13 +125,13 @@ void test_function_vector_get(void) {
     int tmp[] = {5, 1000};
 
     // initial capacity and size check
-    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    Vector *tstvec = vector_new(sizeof(int), 1);
     vector_add_back(tstvec, &tmp[0]);
     vector_add_back(tstvec, &tmp[1]);
 
-    TEST_ASSERT_EQUAL_INT32(tmp[0], *(size_t*)vector_get(tstvec, 0));
-    TEST_ASSERT_EQUAL_INT32(tmp[1], *(size_t*)vector_get(tstvec, 1));
-    TEST_ASSERT_NULL((size_t*)vector_get(tstvec, 100));
+    TEST_ASSERT_EQUAL_INT32(tmp[0], *(int*)vector_get(tstvec, 0));
+    TEST_ASSERT_EQUAL_INT32(tmp[1], *(int*)vector_get(tstvec, 1));
+    TEST_ASSERT_NULL((int*)vector_get(tstvec, 100));
 
     vector_free(tstvec);
 
@@ -119,7 +142,7 @@ void test_function_vector_delete_idx(void) {
 
     int tmp[] = {5, 1000, 20, 0, 42, 777};
 
-    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    Vector *tstvec = vector_new(sizeof(int), 1);
     for (int i = 0; i<6; i++) {
         vector_add_back(tstvec, &tmp[i]);
     }
@@ -127,7 +150,7 @@ void test_function_vector_delete_idx(void) {
     UTIL_ERR e = vector_delete_idx(tstvec, 1);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     for (int i = 2; i<6; i++) {
-        TEST_ASSERT_EQUAL_INT32(tmp[i], *(size_t*)vector_get(tstvec, i-1));
+        TEST_ASSERT_EQUAL_INT32(tmp[i], *(int*)vector_get(tstvec, i-1));
     }
 
     TEST_ASSERT_EQUAL_INT32(5, tstvec->size);
@@ -138,7 +161,6 @@ void test_function_vector_delete_idx(void) {
 }
 
 
-
 static void print_ints(void *e, FILE *f) {
     fprintf(f, "%d ", *(int*)e);
 }
@@ -147,7 +169,7 @@ void test_function_vector_print(void) {
 
     int tmp[] = {5, 1000, 20, 0, 42, 777};
 
-    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    Vector *tstvec = vector_new(sizeof(int), 1);
     for (int i = 0; i<6; i++) {
         vector_add_back(tstvec, &tmp[i]);
     }
@@ -171,7 +193,7 @@ void test_function_vector_map(void) {
 
     int tmp[] = {1,2,3,4,5,6,7,8,9,10};
 
-    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    Vector *tstvec = vector_new(sizeof(int), 1);
     for (int i = 0; i<10; i++) {
         vector_add_back(tstvec, &tmp[i]);
     }
@@ -188,7 +210,6 @@ void test_function_vector_map(void) {
 }
 
 //################ Generic Vector ################
-
 //################ i32 Vector ################
 
 void test_function_vec_i32_new(void) {
@@ -259,6 +280,26 @@ void test_function_vec_i32_add_front(void) {
     TEST_ASSERT_EQUAL_INT32(tmp[1], tstvec->data[0] );
     TEST_ASSERT_EQUAL_INT32(tmp[0], tstvec->data[1] );
 
+    vec_i32_free(tstvec);
+
+}
+
+
+void test_function_vec_i32_insert(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+
+    int ins_val = -100;
+    UTIL_ERR e = vec_i32_insert(tstvec, ins_val, 5);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(ins_val, tstvec->data[5]);
+    TEST_ASSERT_EQUAL_INT32(tmp[9], tstvec->data[10]);
+    
     vec_i32_free(tstvec);
 
 }
@@ -360,16 +401,22 @@ void test_function_vec_i32_map(void) {
 }
 
 //################ i32 Vector ################
+//################ char Vector ################
+
+
+//################ char Vector ################
+
 
 int main(void) {
 
     
     UNITY_BEGIN();
 
-    // Generic Vecor
+    // Generic vector
     RUN_TEST(test_function_vector_new);
     RUN_TEST(test_function_vector_add_back);
     RUN_TEST(test_function_vector_add_front);
+    RUN_TEST(test_function_vector_insert);
     RUN_TEST(test_function_vector_get);
     RUN_TEST(test_function_vector_clear);
     RUN_TEST(test_function_vector_delete_idx);
@@ -380,13 +427,14 @@ int main(void) {
     RUN_TEST(test_function_vec_i32_new);
     RUN_TEST(test_function_vec_i32_add_back);
     RUN_TEST(test_function_vec_i32_add_front);
+    RUN_TEST(test_function_vec_i32_insert);
     RUN_TEST(test_function_vec_i32_get);
     RUN_TEST(test_function_vec_i32_clear);
     RUN_TEST(test_function_vec_i32_delete_idx);
     RUN_TEST(test_function_vec_i32_print);
     RUN_TEST(test_function_vec_i32_map);
 
-
+    // char vector
 
     return UNITY_END();
 }

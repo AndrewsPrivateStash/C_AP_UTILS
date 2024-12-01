@@ -1,13 +1,13 @@
 /*
-    aputils
-
-    a collection of general functions and structures
-
-    - vector
-    - linked list
-    - hash table
-
-*/
+ *    aputils
+ *
+ *    a collection of general functions and structures
+ *
+ *    - vector
+ *    - linked list
+ *    - hash table
+ *
+ */
 
 #ifndef _APUTILS_H
 #define _APUTILS_H
@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 
@@ -30,7 +31,7 @@ enum _UTILERR {
 typedef enum _UTILERR UTIL_ERR;
 
 
-// ########################### VEC ###########################
+// ########################### VECTORS ###########################
 
 //////////////////// generic vector ////////////////////
 typedef struct {
@@ -49,6 +50,8 @@ void vector_free(Vector*);
 UTIL_ERR vector_add_back(Vector *v, void *elem);
 // add an element to the front of the vector (Vector, address of element)
 UTIL_ERR vector_add_front(Vector *v, void *elem);
+// insert an element at the provided index (shifts others down)
+UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx);
 // return the address of the element at index
 void *vector_get(Vector*, size_t);
 // memset the bytes in range v->size to 0 and set v->size to 0
@@ -59,6 +62,13 @@ UTIL_ERR vector_delete_idx(Vector*, size_t);
 void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*));
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
+
+// map the supplied function pointer over the vector elements (return copy)
+Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*));
+// return new vector with elements filtered based on passed function pointer
+Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*));
+
+
 //////////////////// generic vector ////////////////////
 
 
@@ -78,6 +88,8 @@ void vec_i32_free(Vec_i32*);
 UTIL_ERR vec_i32_add_back(Vec_i32 *v, int32_t elem);
 // add an element to the front of the vector (Vector, int32 element)
 UTIL_ERR vec_i32_add_front(Vec_i32 *v, int32_t elem);
+// insert an element at the provided index (shifts others down)
+UTIL_ERR vec_i32_insert(Vec_i32 *v, int32_t elem, size_t idx);
 // return the element at index (errors handled through UTIL_ERR pointer)
 int32_t vec_i32_get(Vec_i32 *v, size_t idx, UTIL_ERR *e);
 // memset the bytes in range v->size to 0 and set v->size to 0
@@ -88,23 +100,26 @@ UTIL_ERR vec_i32_delete_idx(Vec_i32*, size_t);
 void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
+
+// map the supplied function pointer over the vector elements (return copy)
+Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t));
+// return new vector with elements filtered based on passed function pointer
+Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t));
 //////////////////// int32 vector ////////////////////
 
+//////////////////// char vector ////////////////////
 
 
+//////////////////// char vector ////////////////////
 
-// ########################### VEC ###########################
-
-
-
-
+// ########################### VECTORS ###########################
 
 
 // ########################### Linked Lists ###########################
 // ########################### Linked Lists ###########################
 
-// ########################### Has Table ###########################
-// ########################### Has Table ###########################
+// ########################### Hash Table ###########################
+// ########################### Hash Table ###########################
 
 
 
