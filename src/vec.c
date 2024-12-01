@@ -150,6 +150,18 @@ void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*)) {
 }
 
 
+UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*)) {
+    if (!v) return E_EMPTY_VEC;
+
+    for (size_t i = 0; i < v->size; i++) {
+        char *elem = (char*)v->data + i * v->elem_size;
+        mapfunc((void*)elem);
+    }
+    
+    return E_SUCCESS;
+}
+
+
 // ###################### GENERIC VECTOR ######################
 
 
@@ -189,7 +201,7 @@ static void vec_i32_resize(Vec_i32 *v) {
     if (v->size < v->cap) return;
     
     v->cap *= 2;
-    v->data = realloc(v->data, v->cap);
+    v->data = realloc(v->data, v->cap * sizeof(int32_t));
     if (!v->data) {
         vector_fatal("failed to realloc vector");
     }
@@ -274,6 +286,17 @@ void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
     for (size_t i = 0; i< v->size; i++) {
         print( v->data[i], f );
     }
+}
+
+
+UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*)) {
+    if (!v) return E_EMPTY_VEC;
+
+    for (size_t i = 0; i < v->size; i++) {
+        mapfunc(v->data + i);
+    }
+    
+    return E_SUCCESS;
 }
 
 

@@ -162,6 +162,31 @@ void test_function_vector_print(void) {
 
 }
 
+
+static void vec_int_map(void *elem) {
+    *(int*)elem *= 2;
+}
+
+void test_function_vector_map(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vector *tstvec = vector_new(sizeof(size_t), 1);
+    for (int i = 0; i<10; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+
+    // map a doubling function over the vector
+    UTIL_ERR e = vector_map(tstvec, vec_int_map);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, *(int*)vector_get(tstvec, i));
+    }
+    
+    vector_free(tstvec);
+
+}
+
 //################ Generic Vector ################
 
 //################ i32 Vector ################
@@ -305,8 +330,31 @@ void test_function_vec_i32_print(void) {
     printf("\n");
 
     TEST_PASS();
+    vec_i32_free(tstvec);
 
+}
 
+static void vec_i32_mapper(int32_t *elem) {
+    *elem *= 2;
+}
+
+void test_function_vec_i32_map(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+
+    // map a doubling function over the vector
+    UTIL_ERR e = vec_i32_map(tstvec, vec_i32_mapper);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, vec_i32_get(tstvec, i, &e));
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
+    }
+    
     vec_i32_free(tstvec);
 
 }
@@ -326,6 +374,7 @@ int main(void) {
     RUN_TEST(test_function_vector_clear);
     RUN_TEST(test_function_vector_delete_idx);
     RUN_TEST(test_function_vector_print);
+    RUN_TEST(test_function_vector_map);
 
     // i32 vector
     RUN_TEST(test_function_vec_i32_new);
@@ -335,7 +384,7 @@ int main(void) {
     RUN_TEST(test_function_vec_i32_clear);
     RUN_TEST(test_function_vec_i32_delete_idx);
     RUN_TEST(test_function_vec_i32_print);
-
+    RUN_TEST(test_function_vec_i32_map);
 
 
 

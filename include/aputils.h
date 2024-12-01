@@ -57,6 +57,8 @@ void vector_clear(Vector*);
 UTIL_ERR vector_delete_idx(Vector*, size_t);
 // frint the vector to stream using passed print function
 void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*));
+// map the supplied function pointer over the vector elements (in place)
+UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
 //////////////////// generic vector ////////////////////
 
 
@@ -84,8 +86,9 @@ void vec_i32_clear(Vec_i32*);
 UTIL_ERR vec_i32_delete_idx(Vec_i32*, size_t);
 // frint the vector to stream using passed print function
 void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
+// map the supplied function pointer over the vector elements (in place)
+UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
 //////////////////// int32 vector ////////////////////
-
 
 
 
