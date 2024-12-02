@@ -259,6 +259,33 @@ void test_function_vector_map_new(void) {
 
 }
 
+static bool vector_filter_func(void *elem) {
+    return *(int*)elem % 2 == 0;
+}
+
+void test_function_vector_filter(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<10; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    Vector *new_vec = vector_filter(tstvec, vector_filter_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    vector_print(new_vec, stdout, print_ints); printf("\n");
+    for (size_t i = 0; i<new_vec->size; i++) {
+        TEST_ASSERT_TRUE(*(int*)vector_get(new_vec, i) % 2 == 0);
+    }
+    
+    vector_free(tstvec);
+    vector_free(new_vec);
+
+}
+
 
 
 
@@ -504,6 +531,34 @@ void test_function_vec_i32_map_new(void) {
 
 }
 
+
+static bool vec_i32_filter_func(int32_t elem) {
+    return elem % 2 == 0;
+}
+
+void test_function_vec_i32_filter(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    Vec_i32 *new_vec = vec_i32_filter(tstvec, vec_i32_filter_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    vec_i32_print(new_vec, stdout, print_ints_i32); printf("\n");
+    for (size_t i = 0; i<new_vec->size; i++) {
+        TEST_ASSERT_TRUE(vec_i32_get(new_vec, i, &e) % 2 == 0);
+    }
+    
+    vec_i32_free(tstvec);
+    vec_i32_free(new_vec);
+
+}
+
 //################ i32 Vector ################
 //################ char Vector ################
 
@@ -528,6 +583,7 @@ int main(void) {
     RUN_TEST(test_function_vector_print);
     RUN_TEST(test_function_vector_map);
     RUN_TEST(test_function_vector_map_new);
+    RUN_TEST(test_function_vector_filter);
 
     // i32 vector
     RUN_TEST(test_function_vec_i32_new);
@@ -541,6 +597,7 @@ int main(void) {
     RUN_TEST(test_function_vec_i32_print);
     RUN_TEST(test_function_vec_i32_map);
     RUN_TEST(test_function_vec_i32_map_new);
+    RUN_TEST(test_function_vec_i32_filter);
 
     // char vector
 

@@ -144,7 +144,7 @@ UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx) {
 }
 
 
-void *vector_get(Vector *v, size_t idx) {
+void *vector_get(const Vector *v, size_t idx) {
     if (!v) return NULL;
     if (idx > v->size -1) return NULL;
 
@@ -221,6 +221,39 @@ Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e) {
 
     vector_map(new_vec, mapfunc);
     return new_vec;       
+}
+
+
+Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return (Vector*)0;
+    }
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return (Vector*)0;
+    }
+
+    Vector *new_vec = vector_new(v->elem_size, 1);
+    if (!new_vec) {
+        *e = E_BAD_ALLOC;
+        return (Vector*)0;
+    }
+
+    UTIL_ERR err = E_SUCCESS;
+    for (size_t i = 0; i<v->size; i++) {
+        if (mapfunc(vector_get(v, i))) {
+            err = vector_add_back(new_vec, vector_get(v, i));
+            if (err != E_SUCCESS) {
+                *e = err;
+                vector_free(new_vec);
+                return (Vector*)0;
+            }
+        }
+    }
+
+    return new_vec;
+
 }
 
 
@@ -330,7 +363,7 @@ UTIL_ERR vec_i32_insert(Vec_i32 *v, int32_t elem, size_t idx) {
 }
 
 
-int32_t vec_i32_get(Vec_i32 *v, size_t idx, UTIL_ERR *e) {
+int32_t vec_i32_get(const Vec_i32 *v, size_t idx, UTIL_ERR *e) {
     if (!v) {
         *e = E_EMPTY_VEC;
         return 0;
@@ -408,6 +441,38 @@ Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e
 
     vec_i32_map(new_vec, mapfunc);
     return new_vec;       
+}
+
+
+Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return (Vec_i32*)0;
+    }
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return (Vec_i32*)0;
+    }
+
+    Vec_i32 *new_vec = vec_i32_new(1);
+    if (!new_vec) {
+        *e = E_BAD_ALLOC;
+        return (Vec_i32*)0;
+    }
+
+    UTIL_ERR err = E_SUCCESS, e_get = E_SUCCESS;
+    for (size_t i = 0; i<v->size; i++) {
+        if (mapfunc(vec_i32_get(v, i, &e_get))) {
+            err = vec_i32_add_back(new_vec, vec_i32_get(v, i, &e_get));
+            if (err != E_SUCCESS) {
+                *e = err;
+                vec_i32_free(new_vec);
+                return (Vec_i32*)0;
+            }
+        }
+    }
+
+    return new_vec;
 }
 
 // ###################### i32 VECTOR ######################

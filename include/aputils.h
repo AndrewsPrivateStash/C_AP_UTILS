@@ -56,7 +56,7 @@ UTIL_ERR vector_add_front(Vector *v, void *elem);
 // insert an element at the provided index (shifts others down)
 UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx);
 // return the address of the element at index
-void *vector_get(Vector*, size_t);
+void *vector_get(const Vector*, size_t);
 // memset the bytes in range v->size to 0 and set v->size to 0
 void vector_clear(Vector*);
 // remove element at index, and shift remaning elements up one
@@ -69,7 +69,7 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
 // map the supplied function pointer over the vector elements (return copy)
 Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
-Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*));
+Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e);
 
 
 //////////////////// generic vector ////////////////////
@@ -96,7 +96,7 @@ UTIL_ERR vec_i32_add_front(Vec_i32 *v, int32_t elem);
 // insert an element at the provided index (shifts others down)
 UTIL_ERR vec_i32_insert(Vec_i32 *v, int32_t elem, size_t idx);
 // return the element at index (errors handled through UTIL_ERR pointer)
-int32_t vec_i32_get(Vec_i32 *v, size_t idx, UTIL_ERR *e);
+int32_t vec_i32_get(const Vec_i32 *v, size_t idx, UTIL_ERR *e);
 // memset the bytes in range v->size to 0 and set v->size to 0
 void vec_i32_clear(Vec_i32*);
 // remove element at index, and shift remaning elements up one
@@ -109,7 +109,7 @@ UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
 // map the supplied function pointer over the vector elements (return copy)
 Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
-Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t));
+Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e);
 //////////////////// int32 vector ////////////////////
 
 //////////////////// char vector ////////////////////
