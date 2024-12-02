@@ -28,7 +28,7 @@ enum _UTILERR {
     E_MEMCOPY = -4,
     E_OUTOFBOUNDS = -5,
     E_EMPTY_FUNC = -6,
-    E_NOOP = -7,    // no operation to perform
+    E_NOOP = -7,                // no operation to perform
 };
 typedef enum _UTILERR UTIL_ERR;
 
@@ -71,8 +71,8 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
 Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
 Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e);
-// check for an element in the vector and return true if it exists
-bool vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*), UTIL_ERR *e);
+// check for an element in the vector and return idx if found, otherwise -1
+intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UTIL_ERR *e);
 
 
 //////////////////// generic vector ////////////////////
@@ -105,7 +105,7 @@ void vec_i32_clear(Vec_i32*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vec_i32_delete_idx(Vec_i32*, size_t);
 // frint the vector to stream using passed print function
-void vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
+UTIL_ERR vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
@@ -113,6 +113,8 @@ UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
 Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
 Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e);
+// check for an element in the vector and return idx if found, otherwise -1
+intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int32_t), UTIL_ERR *e);
 //////////////////// int32 vector ////////////////////
 
 //////////////////// char vector ////////////////////

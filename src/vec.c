@@ -270,6 +270,33 @@ Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
 }
 
 
+intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return -1;
+    }
+
+    if (!elem) {
+        *e = E_EMPTY_ARG;
+        return -1;
+    }
+
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return -1;
+    }
+
+    UTIL_ERR err_get = E_SUCCESS;
+    for (size_t i = 0; i < v->size; i++) {
+        void *cmp_elem = vector_get(v, i, &err_get);
+        if (err_get != E_SUCCESS) continue;
+        if (mapfunc(elem, cmp_elem)) return i;
+    }
+
+    return -1;
+}
+
+
 // ###################### GENERIC VECTOR ######################
 // ###################### i32 VECTOR ######################
 
@@ -298,6 +325,7 @@ Vec_i32 *vec_i32_new(size_t cap) {
 
 
 void vec_i32_free(Vec_i32 *v) {
+    if (!v) return;
     free(v->data);
     free(v);
 }
@@ -417,13 +445,17 @@ UTIL_ERR vec_i32_delete_idx(Vec_i32 *v, size_t idx) {
 }
 
 
-void vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
-    if (!v || !f || !print) return;
-    if (v->size == 0) return;
+UTIL_ERR vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
+    if (!v) return E_EMPTY_VEC;
+    if (!f) return E_EMPTY_ARG;
+    if (!print) return E_EMPTY_FUNC;    
+    if (v->size == 0) return E_NOOP;
     
     for (size_t i = 0; i< v->size; i++) {
         print( v->data[i], f );
     }
+
+    return E_SUCCESS;
 }
 
 
@@ -486,6 +518,28 @@ Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) 
     }
 
     return new_vec;
+}
+
+
+intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int32_t), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return -1;
+    }
+
+    UTIL_ERR err_get = E_SUCCESS;
+    for (size_t i = 0; i < v->size; i++) {
+        int32_t cmp_elem = vec_i32_get(v, i, &err_get);
+        if (err_get != E_SUCCESS) continue;
+
+        if (!mapfunc) {
+            if (elem == cmp_elem) return i;  // default int compare if no function passed
+        } else {
+            if (mapfunc(elem, cmp_elem)) return i;
+        }
+    }
+
+    return -1;
 }
 
 // ###################### i32 VECTOR ######################

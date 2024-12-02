@@ -17,7 +17,8 @@ CC       := gcc
 TARGET   := libaputils.a
 BIN      := bin/$(TARGET)
 
-CFLAGS   := -Wall -Wextra -Werror -ggdb -Og
+CFLAGS   := -I./include 
+CFLAGS   += -Wall -Wextra -Werror -ggdb -Og
 CFLAGS   += -Wnull-dereference
 CFLAGS   += -Wpointer-arith
 CFLAGS   += -Wcast-align
@@ -56,8 +57,8 @@ profile: $(BIN)
 $(BIN): $(OBJS)
 	ar rcs $@ $^
 
-$(BLD)/%.o: $(SRC)/%.c $(INC)/$(HEAD)
-	$(CC) -c $(CFLAGS) $< $@
+$(BLD)/%.o: $(SRC)/%.c
+	$(CC) -c $(CFLAGS) $< -o $@
 
 
 install: $(BIN)

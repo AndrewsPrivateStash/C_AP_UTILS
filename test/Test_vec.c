@@ -162,7 +162,7 @@ void test_function_vector_get(void) {
     TEST_ASSERT_EQUAL_INT32(tmp[1], *(int*)vector_get(tstvec, 1, &e));
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     TEST_ASSERT_NULL((int*)vector_get(tstvec, 100, &e));
-    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_TRUE(e = E_OUTOFBOUNDS);
 
     vector_free(tstvec);
 
@@ -291,6 +291,50 @@ void test_function_vector_filter(void) {
     
     vector_free(tstvec);
     vector_free(new_vec);
+
+}
+
+struct vector_in_tst {
+    int a;
+    char buff[64];
+    void *c;
+};
+
+static bool vector_in_func(void *e1, void *e2) {
+    if (
+        ((struct vector_in_tst*)e1)->a == ((struct vector_in_tst*)e2)->a &&
+        strcmp(((struct vector_in_tst*)e1)->buff, ((struct vector_in_tst*)e2)->buff) == 0 &&
+        ((struct vector_in_tst*)e1)->c == ((struct vector_in_tst*)e2)->c
+    ) return true;
+    else return false;
+}
+
+void test_function_vector_in(void) {
+    struct vector_in_tst tst_arr[] = {
+        {.a = 0, .c = (void*)0x55555555f2a0, .buff = "some text"},
+        {.a = 1, .c = (void*)0x5555555552d0, .buff = "more text"},
+        {.a = 2, .c = (void*)0x7fffffffddec, .buff = "even more text"},
+        {.a = 3, .c = (void*)0x5555555570d7, .buff = "yep text"},
+    };
+    struct vector_in_tst find_elem = {2, "even more text", (void*)0x7fffffffddec};
+    struct vector_in_tst not_elem = {8, "bad omen", (void*)0x7fffff12ddec};
+
+    Vector *tstvec = vector_new(sizeof(struct vector_in_tst), 1);
+    for (int i = 0; i<4; i++) {
+        vector_add_back(tstvec, &tst_arr[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    intmax_t is_fnd = vector_in(tstvec, &find_elem, vector_in_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_TRUE(is_fnd != -1);
+    TEST_ASSERT_EQUAL_INT32(2, is_fnd);
+
+    is_fnd = vector_in(tstvec, &not_elem, vector_in_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(-1, is_fnd);
+
+    vector_free(tstvec);
 
 }
 
@@ -567,6 +611,40 @@ void test_function_vec_i32_filter(void) {
 
 }
 
+static bool vec_i32_in_func(int32_t e1, int32_t e2) {
+    return e1 % 2 == e2;
+}
+
+void test_function_vec_i32_in(void) {
+
+    int32_t tmp[] = {1,2,3,4,5,6,7,8,9,10};
+    int32_t fnd = 5;
+    int32_t nfnd = 0;
+
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }    
+
+    UTIL_ERR e = E_SUCCESS;
+    intmax_t is_fnd = vec_i32_in(tstvec, fnd, NULL, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_TRUE(is_fnd != -1);
+    TEST_ASSERT_EQUAL_INT32(4, is_fnd);
+
+    is_fnd = vec_i32_in(tstvec, fnd, vec_i32_in_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_TRUE(is_fnd != -1);
+    TEST_ASSERT_EQUAL_INT32(0, is_fnd);
+
+    is_fnd = vec_i32_in(tstvec, nfnd, NULL, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(-1, is_fnd);
+
+    vec_i32_free(tstvec);
+
+}
+
 //################ i32 Vector ################
 //################ char Vector ################
 
@@ -592,6 +670,7 @@ int main(void) {
     RUN_TEST(test_function_vector_map);
     RUN_TEST(test_function_vector_map_new);
     RUN_TEST(test_function_vector_filter);
+    RUN_TEST(test_function_vector_in);
 
     // i32 vector
     RUN_TEST(test_function_vec_i32_new);
@@ -606,6 +685,7 @@ int main(void) {
     RUN_TEST(test_function_vec_i32_map);
     RUN_TEST(test_function_vec_i32_map_new);
     RUN_TEST(test_function_vec_i32_filter);
+    RUN_TEST(test_function_vec_i32_in);
 
     // char vector
 
