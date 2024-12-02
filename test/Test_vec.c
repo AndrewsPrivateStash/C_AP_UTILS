@@ -53,6 +53,33 @@ void test_function_vector_clear(void) {
 
 }
 
+
+void test_function_vector_copy(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<10; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+    Vector *new_vec = vector_copy(tstvec);
+    TEST_ASSERT_EQUAL_INT32(tstvec->cap, new_vec->cap);
+    TEST_ASSERT_EQUAL_INT32(tstvec->size, new_vec->size);
+    TEST_ASSERT_EQUAL_INT32(tstvec->elem_size, new_vec->elem_size);
+
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_INT32(
+            *(int*)vector_get(tstvec, i),
+            *(int*)vector_get(new_vec, i)
+        );
+    }
+    
+    vector_free(tstvec);
+    vector_free(new_vec);
+
+}
+
+
 void test_function_vector_add_back(void) {
 
     int tmp[] = {5, 1000};
@@ -209,6 +236,32 @@ void test_function_vector_map(void) {
 
 }
 
+
+void test_function_vector_map_new(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<10; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    Vector *new_vec = vector_map_new(tstvec, vec_int_map, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, *(int*)vector_get(new_vec, i));
+    }
+    
+    vector_free(tstvec);
+    vector_free(new_vec);
+
+}
+
+
+
+
 //################ Generic Vector ################
 //################ i32 Vector ################
 
@@ -242,6 +295,33 @@ void test_function_vec_i32_clear(void) {
     }
     
     vec_i32_free(tstvec);
+
+}
+
+
+void test_function_vec_i32_copy(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+    UTIL_ERR e = E_SUCCESS;
+
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+    Vec_i32 *new_vec = vec_i32_copy(tstvec);
+    TEST_ASSERT_EQUAL_INT32(tstvec->cap, new_vec->cap);
+    TEST_ASSERT_EQUAL_INT32(tstvec->size, new_vec->size);
+
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_INT32(
+            vec_i32_get(tstvec, i, &e),
+            vec_i32_get(new_vec, i, &e)
+        );
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
+    }
+    
+    vec_i32_free(tstvec);
+    vec_i32_free(new_vec);
 
 }
 
@@ -375,6 +455,7 @@ void test_function_vec_i32_print(void) {
 
 }
 
+
 static void vec_i32_mapper(int32_t *elem) {
     *elem *= 2;
 }
@@ -400,6 +481,29 @@ void test_function_vec_i32_map(void) {
 
 }
 
+
+void test_function_vec_i32_map_new(void) {
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    Vec_i32 *new_vec = vec_i32_map_new(tstvec, vec_i32_mapper, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, vec_i32_get(new_vec, i, &e));
+    }
+    
+    vec_i32_free(tstvec);
+    vec_i32_free(new_vec);
+
+}
+
 //################ i32 Vector ################
 //################ char Vector ################
 
@@ -414,25 +518,29 @@ int main(void) {
 
     // Generic vector
     RUN_TEST(test_function_vector_new);
+    RUN_TEST(test_function_vector_copy);
+    RUN_TEST(test_function_vector_clear);
     RUN_TEST(test_function_vector_add_back);
     RUN_TEST(test_function_vector_add_front);
     RUN_TEST(test_function_vector_insert);
     RUN_TEST(test_function_vector_get);
-    RUN_TEST(test_function_vector_clear);
     RUN_TEST(test_function_vector_delete_idx);
     RUN_TEST(test_function_vector_print);
     RUN_TEST(test_function_vector_map);
+    RUN_TEST(test_function_vector_map_new);
 
     // i32 vector
     RUN_TEST(test_function_vec_i32_new);
+    RUN_TEST(test_function_vec_i32_copy);
+    RUN_TEST(test_function_vec_i32_clear);
     RUN_TEST(test_function_vec_i32_add_back);
     RUN_TEST(test_function_vec_i32_add_front);
     RUN_TEST(test_function_vec_i32_insert);
     RUN_TEST(test_function_vec_i32_get);
-    RUN_TEST(test_function_vec_i32_clear);
     RUN_TEST(test_function_vec_i32_delete_idx);
     RUN_TEST(test_function_vec_i32_print);
     RUN_TEST(test_function_vec_i32_map);
+    RUN_TEST(test_function_vec_i32_map_new);
 
     // char vector
 

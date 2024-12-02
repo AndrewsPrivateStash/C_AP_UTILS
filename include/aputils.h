@@ -27,6 +27,7 @@ enum _UTILERR {
     E_BAD_ALLOC = -3,
     E_MEMCOPY = -4,
     E_OUTOFBOUNDS = -5,
+    E_EMPTY_FUNC = -6,
 };
 typedef enum _UTILERR UTIL_ERR;
 
@@ -45,6 +46,8 @@ typedef struct {
 Vector *vector_new(size_t, size_t);
 // free the vector and its data
 void vector_free(Vector*);
+// return a copy of the vector
+Vector *vector_copy(const Vector *v);
 
 // add an element to the back of the vector (Vector, address of element)
 UTIL_ERR vector_add_back(Vector *v, void *elem);
@@ -64,7 +67,7 @@ void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*));
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
 
 // map the supplied function pointer over the vector elements (return copy)
-Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*));
+Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
 Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*));
 
@@ -83,6 +86,8 @@ typedef struct {
 Vec_i32 *vec_i32_new(size_t);
 // free the vector and its data
 void vec_i32_free(Vec_i32*);
+// return a copy of the vector
+Vec_i32 *vec_i32_copy(const Vec_i32 *v);
 
 // add an element to the back of the vector (Vector, int32 element)
 UTIL_ERR vec_i32_add_back(Vec_i32 *v, int32_t elem);
@@ -102,7 +107,7 @@ void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
 UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
 
 // map the supplied function pointer over the vector elements (return copy)
-Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t));
+Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
 Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t));
 //////////////////// int32 vector ////////////////////
@@ -120,7 +125,6 @@ Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t));
 
 // ########################### Hash Table ###########################
 // ########################### Hash Table ###########################
-
 
 
 

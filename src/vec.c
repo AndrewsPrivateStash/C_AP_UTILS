@@ -62,6 +62,24 @@ static void vector_resize(Vector *v) {
 }
 
 
+Vector *vector_copy(const Vector *v) {
+    Vector *new_vec = vector_new(v->elem_size, v->cap);
+    if (!new_vec) return (Vector*)0;
+
+    for (size_t i = 0; i<v->size; i++) {
+        if (!memcpy(
+            (char*)new_vec->data + i * new_vec->elem_size,
+            (char*)v->data + i * new_vec->elem_size,
+            new_vec->elem_size
+        )) vector_fatal("failed to copy vector");
+    }
+    new_vec->size = v->size;
+
+    return new_vec;
+}
+
+
+
 UTIL_ERR vector_add_back(Vector *v, void *elem) {
     if (!v) return E_EMPTY_VEC;
     if (!elem) return E_EMPTY_ARG;
@@ -166,7 +184,7 @@ UTIL_ERR vector_delete_idx(Vector *v, size_t idx) {
 
 
 void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*)) {
-    if (!v || !f) return;
+    if (!v || !f || !print) return;
     if (v->size == 0) return;
     
     for (size_t i = 0; i< v->size; i++) {
@@ -177,6 +195,7 @@ void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*)) {
 
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*)) {
     if (!v) return E_EMPTY_VEC;
+    if (!mapfunc) return E_EMPTY_FUNC;
 
     for (size_t i = 0; i < v->size; i++) {
         char *elem = (char*)v->data + i * v->elem_size;
@@ -184,6 +203,24 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*)) {
     }
     
     return E_SUCCESS;
+}
+
+
+Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return (Vector*)0;
+    }
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return (Vector*)0;
+    }
+
+    Vector *new_vec = vector_copy(v);
+    if (!new_vec) vector_fatal("failed to copy vector");
+
+    vector_map(new_vec, mapfunc);
+    return new_vec;       
 }
 
 
@@ -229,6 +266,19 @@ static void vec_i32_resize(Vec_i32 *v) {
     if (!v->data) {
         vector_fatal("failed to realloc vector");
     }
+}
+
+
+Vec_i32 *vec_i32_copy(const Vec_i32 *v) {
+    Vec_i32 *new_vec = vec_i32_new(v->cap);
+    if (!new_vec) return (Vec_i32*)0;
+
+    for (size_t i = 0; i<v->size; i++) {
+        new_vec->data[i] = v->data[i];
+    }
+    new_vec->size = v->size;
+
+    return new_vec;
 }
 
 
@@ -322,7 +372,7 @@ UTIL_ERR vec_i32_delete_idx(Vec_i32 *v, size_t idx) {
 
 
 void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
-    if (!v || !f) return;
+    if (!v || !f || !print) return;
     if (v->size == 0) return;
     
     for (size_t i = 0; i< v->size; i++) {
@@ -333,12 +383,31 @@ void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
 
 UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*)) {
     if (!v) return E_EMPTY_VEC;
+    if (!mapfunc) return E_EMPTY_FUNC;
 
     for (size_t i = 0; i < v->size; i++) {
         mapfunc(v->data + i);
     }
     
     return E_SUCCESS;
+}
+
+
+Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return (Vec_i32*)0;
+    }
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return (Vec_i32*)0;
+    }
+
+    Vec_i32 *new_vec = vec_i32_copy(v);
+    if (!new_vec) vector_fatal("failed to copy vector");
+
+    vec_i32_map(new_vec, mapfunc);
+    return new_vec;       
 }
 
 // ###################### i32 VECTOR ######################
