@@ -28,6 +28,7 @@ enum _UTILERR {
     E_MEMCOPY = -4,
     E_OUTOFBOUNDS = -5,
     E_EMPTY_FUNC = -6,
+    E_NOOP = -7,    // no operation to perform
 };
 typedef enum _UTILERR UTIL_ERR;
 
@@ -56,13 +57,13 @@ UTIL_ERR vector_add_front(Vector *v, void *elem);
 // insert an element at the provided index (shifts others down)
 UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx);
 // return the address of the element at index
-void *vector_get(const Vector*, size_t);
+void *vector_get(const Vector*, size_t, UTIL_ERR *e);
 // memset the bytes in range v->size to 0 and set v->size to 0
-void vector_clear(Vector*);
+UTIL_ERR vector_clear(Vector*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vector_delete_idx(Vector*, size_t);
 // frint the vector to stream using passed print function
-void vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*));
+UTIL_ERR vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
@@ -70,6 +71,8 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
 Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
 Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e);
+// check for an element in the vector and return true if it exists
+bool vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*), UTIL_ERR *e);
 
 
 //////////////////// generic vector ////////////////////

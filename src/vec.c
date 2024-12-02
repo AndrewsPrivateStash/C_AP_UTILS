@@ -45,6 +45,7 @@ Vector *vector_new(size_t elem_size, size_t cap) {
 
 
 void vector_free(Vector *v) {
+    if (!v) return;
     free(v->data);
     free(v);
 }
@@ -144,20 +145,28 @@ UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx) {
 }
 
 
-void *vector_get(const Vector *v, size_t idx) {
-    if (!v) return NULL;
-    if (idx > v->size -1) return NULL;
+void *vector_get(const Vector *v, size_t idx, UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return NULL;
+    }
+    if (idx > v->size -1) {
+        *e = E_OUTOFBOUNDS;   
+        return NULL;
+    }
 
     return (void*)((char*)v->data + idx * v->elem_size);
 }
 
 
-void vector_clear(Vector *v) {
-    if (!v) return;
-    if (v->size == 0) return;
+UTIL_ERR vector_clear(Vector *v) {
+    if (!v) return E_EMPTY_VEC;
+    if (v->size == 0) return E_NOOP;
 
     memset(v->data, 0, v->size * v->elem_size);
     v->size = 0;
+
+    return E_SUCCESS;
 }
 
 
@@ -183,13 +192,17 @@ UTIL_ERR vector_delete_idx(Vector *v, size_t idx) {
 }
 
 
-void vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*)) {
-    if (!v || !f || !print) return;
-    if (v->size == 0) return;
+UTIL_ERR vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*)) {
+    if (!v) return E_EMPTY_VEC;
+    if (!f) return E_EMPTY_ARG;
+    if (!print) return E_EMPTY_FUNC;    
+    if (v->size == 0) return E_NOOP;
     
     for (size_t i = 0; i< v->size; i++) {
         print( (char*)v->data + i * v->elem_size, f );
     }
+
+    return E_SUCCESS;
 }
 
 
@@ -240,10 +253,10 @@ Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
         return (Vector*)0;
     }
 
-    UTIL_ERR err = E_SUCCESS;
+    UTIL_ERR err = E_SUCCESS, e_get = E_SUCCESS;
     for (size_t i = 0; i<v->size; i++) {
-        if (mapfunc(vector_get(v, i))) {
-            err = vector_add_back(new_vec, vector_get(v, i));
+        if (mapfunc(vector_get(v, i, &e_get))) {
+            err = vector_add_back(new_vec, vector_get(v, i, &e_get));
             if (err != E_SUCCESS) {
                 *e = err;
                 vector_free(new_vec);

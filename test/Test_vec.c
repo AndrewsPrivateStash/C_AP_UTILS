@@ -69,8 +69,8 @@ void test_function_vector_copy(void) {
 
     for (int i = 0; i<10; i++) {
         TEST_ASSERT_EQUAL_INT32(
-            *(int*)vector_get(tstvec, i),
-            *(int*)vector_get(new_vec, i)
+            *(int*)vector_get(tstvec, i, NULL),
+            *(int*)vector_get(new_vec, i, NULL)
         );
     }
     
@@ -150,15 +150,19 @@ void test_function_vector_insert(void) {
 void test_function_vector_get(void) {
 
     int tmp[] = {5, 1000};
+    UTIL_ERR e = E_SUCCESS;
 
     // initial capacity and size check
     Vector *tstvec = vector_new(sizeof(int), 1);
     vector_add_back(tstvec, &tmp[0]);
     vector_add_back(tstvec, &tmp[1]);
 
-    TEST_ASSERT_EQUAL_INT32(tmp[0], *(int*)vector_get(tstvec, 0));
-    TEST_ASSERT_EQUAL_INT32(tmp[1], *(int*)vector_get(tstvec, 1));
-    TEST_ASSERT_NULL((int*)vector_get(tstvec, 100));
+    TEST_ASSERT_EQUAL_INT32(tmp[0], *(int*)vector_get(tstvec, 0, &e));
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(tmp[1], *(int*)vector_get(tstvec, 1, &e));
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_NULL((int*)vector_get(tstvec, 100, &e));
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     vector_free(tstvec);
 
@@ -177,7 +181,8 @@ void test_function_vector_delete_idx(void) {
     UTIL_ERR e = vector_delete_idx(tstvec, 1);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     for (int i = 2; i<6; i++) {
-        TEST_ASSERT_EQUAL_INT32(tmp[i], *(int*)vector_get(tstvec, i-1));
+        TEST_ASSERT_EQUAL_INT32(tmp[i], *(int*)vector_get(tstvec, i-1, &e));
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
     }
 
     TEST_ASSERT_EQUAL_INT32(5, tstvec->size);
@@ -229,7 +234,8 @@ void test_function_vector_map(void) {
     UTIL_ERR e = vector_map(tstvec, vec_int_map);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     for (int i = 0; i<10; i++) {
-        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, *(int*)vector_get(tstvec, i));
+        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, *(int*)vector_get(tstvec, i, &e));
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
     }
     
     vector_free(tstvec);
@@ -251,7 +257,8 @@ void test_function_vector_map_new(void) {
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     
     for (int i = 0; i<10; i++) {
-        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, *(int*)vector_get(new_vec, i));
+        TEST_ASSERT_EQUAL_INT32(tmp[i] * 2, *(int*)vector_get(new_vec, i, &e));
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
     }
     
     vector_free(tstvec);
@@ -278,7 +285,8 @@ void test_function_vector_filter(void) {
     
     vector_print(new_vec, stdout, print_ints); printf("\n");
     for (size_t i = 0; i<new_vec->size; i++) {
-        TEST_ASSERT_TRUE(*(int*)vector_get(new_vec, i) % 2 == 0);
+        TEST_ASSERT_TRUE(*(int*)vector_get(new_vec, i, &e) % 2 == 0);
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
     }
     
     vector_free(tstvec);
