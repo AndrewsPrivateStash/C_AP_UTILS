@@ -4,7 +4,7 @@
  *      > processes data as bytes using void pointers
  *      > assumes all elements are of the same type
  *
- *      - adding map_new, filter, and insert
+ *      - add: in, 
  */
 
 #include "../include/aputils.h"

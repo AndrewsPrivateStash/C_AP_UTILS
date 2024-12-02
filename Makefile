@@ -54,10 +54,10 @@ profile: PFL = 1
 profile: $(BIN)
 
 $(BIN): $(OBJS)
-	ar rcs $^ -o $@
+	ar rcs $@ $^
 
 $(BLD)/%.o: $(SRC)/%.c $(INC)/$(HEAD)
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< $@
 
 
 install:
