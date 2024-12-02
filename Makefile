@@ -60,7 +60,7 @@ $(BLD)/%.o: $(SRC)/%.c $(INC)/$(HEAD)
 	$(CC) -c $(CFLAGS) $< $@
 
 
-install:
+install: $(BIN)
 ifeq ($(shell whoami), root)
 	cp --update $(BIN) $(INST)/TARGET
 	cp --update $(HEADFL) $(INSTHEAD)/$(HEAD)

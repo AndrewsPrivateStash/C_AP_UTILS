@@ -183,7 +183,7 @@ UTIL_ERR vector_delete_idx(Vector *v, size_t idx) {
 }
 
 
-void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*)) {
+void vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*)) {
     if (!v || !f || !print) return;
     if (v->size == 0) return;
     
@@ -404,7 +404,7 @@ UTIL_ERR vec_i32_delete_idx(Vec_i32 *v, size_t idx) {
 }
 
 
-void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
+void vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
     if (!v || !f || !print) return;
     if (v->size == 0) return;
     

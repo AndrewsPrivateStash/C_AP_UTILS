@@ -62,7 +62,7 @@ void vector_clear(Vector*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vector_delete_idx(Vector*, size_t);
 // frint the vector to stream using passed print function
-void vector_print(Vector *v, FILE *f, void(*print)(void*, FILE*));
+void vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
@@ -102,7 +102,7 @@ void vec_i32_clear(Vec_i32*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vec_i32_delete_idx(Vec_i32*, size_t);
 // frint the vector to stream using passed print function
-void vec_i32_print(Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
+void vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
