@@ -74,7 +74,6 @@ Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e);
 // check for an element in the vector and return idx if found, otherwise -1
 intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UTIL_ERR *e);
 
-
 //////////////////// generic vector ////////////////////
 
 
@@ -115,10 +114,47 @@ Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e
 Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e);
 // check for an element in the vector and return idx if found, otherwise -1
 intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int32_t), UTIL_ERR *e);
+
 //////////////////// int32 vector ////////////////////
 
-//////////////////// char vector ////////////////////
 
+//////////////////// char vector ////////////////////
+typedef struct {
+    char *data;
+    size_t size;
+    size_t cap;
+} Vec_char;
+
+// make a new generic vector (starting capacity)
+Vec_char *vec_char_new(size_t cap);
+// free the vector and its data
+void vec_char_free(Vec_char*);
+// return a copy of the vector
+Vec_char *vec_char_copy(const Vec_char *v);
+
+// add an element to the back of the vector (Vector, int32 element)
+UTIL_ERR vec_char_add_back(Vec_char *v, char elem);
+// add an element to the front of the vector (Vector, int32 element)
+UTIL_ERR vec_char_add_front(Vec_char *v, char elem);
+// insert an element at the provided index (shifts others down)
+UTIL_ERR vec_char_insert(Vec_char *v, char elem, size_t idx);
+// return the element at index (errors handled through UTIL_ERR pointer)
+char vec_char_get(const Vec_char *v, size_t idx, UTIL_ERR *e);
+// memset the bytes in range v->size to 0 and set v->size to 0
+void vec_char_clear(Vec_char*);
+// remove element at index, and shift remaning elements up one
+UTIL_ERR vec_char_delete_idx(Vec_char*, size_t idx);
+// frint the vector to stream using passed print function
+UTIL_ERR vec_char_print(const Vec_char *v, FILE *f, void(*print)(char, FILE*));
+
+// map the supplied function pointer over the vector elements (in place)
+UTIL_ERR vec_char_map(Vec_char *v, void(*mapfunc)(char*));
+// map the supplied function pointer over the vector elements (return copy)
+Vec_char *vec_char_map_new(const Vec_char *v, void(*mapfunc)(char*), UTIL_ERR *e);
+// return new vector with elements filtered based on passed function pointer
+Vec_char *vec_char_filter(const Vec_char *v, bool(*mapfunc)(char), UTIL_ERR *e);
+// check for an element in the vector and return idx if found, otherwise -1
+intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), UTIL_ERR *e);
 
 //////////////////// char vector ////////////////////
 

@@ -543,8 +543,250 @@ intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int3
 }
 
 // ###################### i32 VECTOR ######################
+
 // ###################### char VECTOR ######################
 
+Vec_char *vec_char_new(size_t cap) {
+    if (cap < 1) {
+        return (Vec_char*)0;  // caller checks NULL
+    }
+
+    Vec_char *new_vec = malloc(sizeof(*new_vec));
+    if (!new_vec) {
+        return (Vec_char*)0;
+    }
+
+    new_vec->data = malloc(sizeof(char) * cap);
+    if (!new_vec->data) {
+        free(new_vec);
+        return (Vec_char*)0;
+    }
+
+    new_vec->cap = cap;
+    new_vec->size = 0;
+
+    return new_vec;
+
+}
+
+
+void vec_char_free(Vec_char *v) {
+    if (!v) return;
+    free(v->data);
+    free(v);
+}
+
+
+static void vec_char_resize(Vec_char *v) {
+    if (!v) return;
+    if (v->size < v->cap) return;
+    
+    v->cap *= 2;
+    v->data = realloc(v->data, v->cap * sizeof(char));
+    if (!v->data) {
+        vector_fatal("failed to realloc vector");
+    }
+}
+
+
+Vec_char *vec_char_copy(const Vec_char *v) {
+    Vec_char *new_vec = vec_char_new(v->cap);
+    if (!new_vec) return (Vec_char*)0;
+
+    for (size_t i = 0; i<v->size; i++) {
+        new_vec->data[i] = v->data[i];
+    }
+    new_vec->size = v->size;
+
+    return new_vec;
+}
+
+
+UTIL_ERR vec_char_add_back(Vec_char *v, char elem) {
+    if (!v) return E_EMPTY_VEC;
+    if (v->size == v->cap) vec_char_resize(v);
+    
+    v->data[v->size] = elem;
+    v->size++;
+    
+    return E_SUCCESS;
+}
+
+
+UTIL_ERR vec_char_add_front(Vec_char *v, char elem) {
+    if (!v) return E_EMPTY_VEC;
+    if (!elem) return E_EMPTY_ARG;
+    if (v->size == v->cap) vec_char_resize(v);
+
+    // move all elements down one
+    for (size_t i = v->size; i > 0; i--) {
+        v->data[i] = v->data[i-1];
+    }
+
+    // place new element at front
+    v->data[0] = elem;
+    v->size++;
+    
+    return E_SUCCESS;
+
+}
+
+
+UTIL_ERR vec_char_insert(Vec_char *v, char elem, size_t idx) {
+    if (!v) return E_EMPTY_VEC;
+    if (v->size == v->cap) vec_char_resize(v);
+
+    // move all elements down one
+    for (size_t i = v->size; i > idx; i--) {
+        v->data[i] = v->data[i-1];
+    }
+
+    // place new element at idx
+    v->data[idx] = elem;
+    v->size++;
+    
+    return E_SUCCESS;
+
+}
+
+
+char vec_char_get(const Vec_char *v, size_t idx, UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return '\0';
+    }
+    if (idx > v->size -1) {
+        *e = E_OUTOFBOUNDS;
+        return '\0';
+    }
+
+    return v->data[idx];
+}
+
+
+void vec_char_clear(Vec_char *v) {
+    if (!v) return;
+    if (v->size == 0) return;
+
+    memset(v->data, 0, v->size * sizeof(char));
+    v->size = 0;
+}
+
+
+UTIL_ERR vec_char_delete_idx(Vec_char *v, size_t idx) {
+    if (!v) return E_EMPTY_VEC;
+    if (idx >= v->size) return E_OUTOFBOUNDS;
+
+    // move data below idx up one
+    for (size_t i = idx; i < v->size-1; i++) {
+        v->data[i] = v->data[i+1];
+    }
+
+    // clear data from bottom moved element
+    memset(v->data + (v->size -1), 0, sizeof(char));
+    v->size--;
+
+    return E_SUCCESS;
+
+}
+
+
+UTIL_ERR vec_char_print(const Vec_char *v, FILE *f, void(*print)(char, FILE*)) {
+    if (!v) return E_EMPTY_VEC;
+    if (!f) return E_EMPTY_ARG;
+    if (!print) return E_EMPTY_FUNC;    
+    if (v->size == 0) return E_NOOP;
+    
+    for (size_t i = 0; i< v->size; i++) {
+        print( v->data[i], f );
+    }
+
+    return E_SUCCESS;
+}
+
+
+UTIL_ERR vec_char_map(Vec_char *v, void(*mapfunc)(char*)) {
+    if (!v) return E_EMPTY_VEC;
+    if (!mapfunc) return E_EMPTY_FUNC;
+
+    for (size_t i = 0; i < v->size; i++) {
+        mapfunc(v->data + i);
+    }
+    
+    return E_SUCCESS;
+}
+
+
+Vec_char *vec_char_map_new(const Vec_char *v, void(*mapfunc)(char*), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return (Vec_char*)0;
+    }
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return (Vec_char*)0;
+    }
+
+    Vec_char *new_vec = vec_char_copy(v);
+    if (!new_vec) vector_fatal("failed to copy vector");
+
+    vec_char_map(new_vec, mapfunc);
+    return new_vec;       
+}
+
+
+Vec_char *vec_char_filter(const Vec_char *v, bool(*mapfunc)(char), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return (Vec_char*)0;
+    }
+    if (!mapfunc) {
+        *e = E_EMPTY_FUNC;
+        return (Vec_char*)0;
+    }
+
+    Vec_char *new_vec = vec_char_new(1);
+    if (!new_vec) {
+        *e = E_BAD_ALLOC;
+        return (Vec_char*)0;
+    }
+
+    UTIL_ERR err = E_SUCCESS, e_get = E_SUCCESS;
+    for (size_t i = 0; i<v->size; i++) {
+        if (mapfunc(vec_char_get(v, i, &e_get))) {
+            err = vec_char_add_back(new_vec, vec_char_get(v, i, &e_get));
+            if (err != E_SUCCESS) {
+                *e = err;
+                vec_char_free(new_vec);
+                return (Vec_char*)0;
+            }
+        }
+    }
+
+    return new_vec;
+}
+
+
+intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), UTIL_ERR *e) {
+    if (!v) {
+        *e = E_EMPTY_VEC;
+        return -1;
+    }
+
+    UTIL_ERR err_get = E_SUCCESS;
+    for (size_t i = 0; i < v->size; i++) {
+        char cmp_elem = vec_char_get(v, i, &err_get);
+        if (err_get != E_SUCCESS) continue;
+
+        if (!mapfunc) {
+            if (elem == cmp_elem) return i;  // default char compare if no function passed
+        } else {
+            if (mapfunc(elem, cmp_elem)) return i;
+        }
+    }
+
+    return -1;
+}
 
 
 // ###################### char VECTOR ######################

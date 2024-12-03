@@ -648,6 +648,304 @@ void test_function_vec_i32_in(void) {
 //################ i32 Vector ################
 //################ char Vector ################
 
+void test_function_vec_char_new(void) {
+
+    // initial capacity and size check
+    Vec_char *tstvec = vec_char_new(100);
+    TEST_ASSERT_NOT_NULL(tstvec);
+    TEST_ASSERT_NOT_NULL(tstvec->data);
+    TEST_ASSERT_EQUAL_INT32(100, tstvec->cap);
+    TEST_ASSERT_EQUAL_INT32(0, tstvec->size);
+
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_clear(void) {
+
+    char tmp[] = {'a', 'b'};
+
+    Vec_char *tstvec = vec_char_new(1);
+    vec_char_add_back(tstvec, tmp[0]);
+    vec_char_add_back(tstvec, tmp[1]);
+
+    vec_char_clear(tstvec);
+    TEST_ASSERT_EQUAL_INT32(0, tstvec->size);
+    for (size_t i = 0; i<2; i++) {
+        TEST_ASSERT_EQUAL_CHAR('\0', tstvec->data[i]);
+    }
+    
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_copy(void) {
+
+    char tmp[] = "abcdefghij";
+    UTIL_ERR e = E_SUCCESS;
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+    Vec_char *new_vec = vec_char_copy(tstvec);
+    TEST_ASSERT_EQUAL_INT32(tstvec->cap, new_vec->cap);
+    TEST_ASSERT_EQUAL_INT32(tstvec->size, new_vec->size);
+
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_CHAR(
+            vec_char_get(tstvec, i, &e),
+            vec_char_get(new_vec, i, &e)
+        );
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
+    }
+    
+    vec_char_free(tstvec);
+    vec_char_free(new_vec);
+
+}
+
+
+void test_function_vec_char_add_back(void) {
+
+    char tmp[] = {'a', 'b'};
+
+    Vec_char *tstvec = vec_char_new(1);
+    UTIL_ERR e = vec_char_add_back(tstvec, tmp[0]);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    e = vec_char_add_back(tstvec, tmp[1]);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(2, tstvec->size);
+    TEST_ASSERT_EQUAL_CHAR(tmp[0], tstvec->data[0] );
+    TEST_ASSERT_EQUAL_CHAR(tmp[1], tstvec->data[1] );
+
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_add_front(void) {
+
+    char tmp[] = {'a', 'b'};
+
+    // initial capacity and size check
+    Vec_char *tstvec = vec_char_new(1);
+    UTIL_ERR e = vec_char_add_front(tstvec, tmp[0]);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    e = vec_char_add_front(tstvec, tmp[1]);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(2, tstvec->size);
+    TEST_ASSERT_EQUAL_CHAR(tmp[1], tstvec->data[0] );
+    TEST_ASSERT_EQUAL_CHAR(tmp[0], tstvec->data[1] );
+
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_insert(void) {
+
+    char tmp[] = "abcdefghij";
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+
+    char ins_val = 'z';
+    UTIL_ERR e = vec_char_insert(tstvec, ins_val, 5);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR(ins_val, tstvec->data[5]);
+    TEST_ASSERT_EQUAL_CHAR(tmp[9], tstvec->data[10]);
+    
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_get(void) {
+
+    char tmp[] = {'a', 'b'};
+    UTIL_ERR e = E_SUCCESS;
+
+    // initial capacity and size check
+    Vec_char *tstvec = vec_char_new(1);
+    vec_char_add_back(tstvec, tmp[0]);
+    vec_char_add_back(tstvec, tmp[1]);
+
+    TEST_ASSERT_EQUAL_CHAR(tmp[0], vec_char_get(tstvec, 0, &e));
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR(tmp[1], vec_char_get(tstvec, 1, &e));
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR('\0', vec_char_get(tstvec, 100, &e));
+    TEST_ASSERT_TRUE(e == E_OUTOFBOUNDS);
+
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_delete_idx(void) {
+
+    char tmp[] = "a cdef";
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<6; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+
+    UTIL_ERR e = vec_char_delete_idx(tstvec, 1);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR('\0', tstvec->data[tstvec->size]);
+    for (int i = 2; i<6; i++) {
+        char v = vec_char_get(tstvec, i-1, &e);
+        printf("%c ", v);
+        TEST_ASSERT_EQUAL_CHAR(tmp[i], v);
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
+    }
+    printf("\n");
+
+    TEST_ASSERT_EQUAL_INT32(5, tstvec->size);
+
+    vec_char_free(tstvec);
+
+}
+
+
+static void print_chars(char e, FILE *f) {
+    fprintf(f, "%c ", e);
+}
+
+void test_function_vec_char_print(void) {
+
+    char tmp[] = "a cdef";
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<6; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+
+    vec_char_print(tstvec, stdout, print_chars);
+    printf("\n");
+
+    TEST_PASS();
+    vec_char_free(tstvec);
+
+}
+
+
+static void vec_char_mapper(char *elem) {
+    *elem += 1;
+}
+
+void test_function_vec_char_map(void) {
+
+    char tmp[] = "abcdefghij";
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+
+    UTIL_ERR e = vec_char_map(tstvec, vec_char_mapper);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_CHAR(tmp[i] + 1, vec_char_get(tstvec, i, &e));
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
+    }
+    
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_map_new(void) {
+
+    char tmp[] = "abcdefghij";
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    Vec_char *new_vec = vec_char_map_new(tstvec, vec_char_mapper, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    for (int i = 0; i<10; i++) {
+        TEST_ASSERT_EQUAL_CHAR(tmp[i] + 1, vec_char_get(new_vec, i, &e));
+    }
+    
+    vec_char_free(tstvec);
+    vec_char_free(new_vec);
+
+}
+
+
+static bool vec_char_filter_func(char elem) {
+    return elem % 2 == 0;
+}
+
+void test_function_vec_char_filter(void) {
+
+    char tmp[] = "abcdefghij";
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+
+    UTIL_ERR e = E_SUCCESS;
+    Vec_char *new_vec = vec_char_filter(tstvec, vec_char_filter_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    vec_char_print(new_vec, stdout, print_chars); printf("\n");
+    for (size_t i = 0; i<new_vec->size; i++) {
+        TEST_ASSERT_TRUE(vec_char_get(new_vec, i, &e) % 2 == 0);
+    }
+    
+    vec_char_free(tstvec);
+    vec_char_free(new_vec);
+
+}
+
+static bool vec_char_in_func(char e1, char e2) {
+    return e1 + 32 == e2;
+}
+
+void test_function_vec_char_in(void) {
+
+    char tmp[] = "abcdefghij";
+    char fnd = 'f';
+    char nfnd = '\t';
+
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }    
+
+    UTIL_ERR e = E_SUCCESS;
+    intmax_t is_fnd = vec_char_in(tstvec, fnd, NULL, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_TRUE(is_fnd != -1);
+    TEST_ASSERT_EQUAL_INT32(5, is_fnd);
+
+    is_fnd = vec_char_in(tstvec, 'G', vec_char_in_func, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_TRUE(is_fnd != -1);
+    TEST_ASSERT_EQUAL_INT32(6, is_fnd);
+
+    is_fnd = vec_char_in(tstvec, nfnd, NULL, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(-1, is_fnd);
+
+    vec_char_free(tstvec);
+
+}
 
 //################ char Vector ################
 
@@ -688,6 +986,19 @@ int main(void) {
     RUN_TEST(test_function_vec_i32_in);
 
     // char vector
+    RUN_TEST(test_function_vec_char_new);
+    RUN_TEST(test_function_vec_char_copy);
+    RUN_TEST(test_function_vec_char_clear);
+    RUN_TEST(test_function_vec_char_add_back);
+    RUN_TEST(test_function_vec_char_add_front);
+    RUN_TEST(test_function_vec_char_insert);
+    RUN_TEST(test_function_vec_char_get);
+    RUN_TEST(test_function_vec_char_delete_idx);
+    RUN_TEST(test_function_vec_char_print);
+    RUN_TEST(test_function_vec_char_map);
+    RUN_TEST(test_function_vec_char_map_new);
+    RUN_TEST(test_function_vec_char_filter);
+    RUN_TEST(test_function_vec_char_in);
 
     return UNITY_END();
 }
