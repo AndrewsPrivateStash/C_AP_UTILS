@@ -3,8 +3,9 @@
  *  generic vector
  *      > processes data as bytes using void pointers
  *      > assumes all elements are of the same type
- *
- *      - add: in, 
+ * 
+ *  i32 vector
+ *  char vector     
  */
 
 #include "../include/aputils.h"
@@ -82,7 +83,7 @@ Vector *vector_copy(const Vector *v) {
 
 
 UTIL_ERR vector_add_back(Vector *v, void *elem) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!elem) return E_EMPTY_ARG;
     if (v->size == v->cap) vector_resize(v);
 
@@ -96,7 +97,7 @@ UTIL_ERR vector_add_back(Vector *v, void *elem) {
 
 
 UTIL_ERR vector_add_front(Vector *v, void *elem) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!elem) return E_EMPTY_ARG;
     if (v->size == v->cap) vector_resize(v);
 
@@ -121,7 +122,7 @@ UTIL_ERR vector_add_front(Vector *v, void *elem) {
 
 
 UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!elem) return E_EMPTY_ARG;
     if (v->size == v->cap) vector_resize(v);
 
@@ -147,7 +148,7 @@ UTIL_ERR vector_insert(Vector *v, void *elem, size_t idx) {
 
 void *vector_get(const Vector *v, size_t idx, UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return NULL;
     }
     if (idx > v->size -1) {
@@ -160,7 +161,7 @@ void *vector_get(const Vector *v, size_t idx, UTIL_ERR *e) {
 
 
 UTIL_ERR vector_clear(Vector *v) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (v->size == 0) return E_NOOP;
 
     memset(v->data, 0, v->size * v->elem_size);
@@ -171,7 +172,7 @@ UTIL_ERR vector_clear(Vector *v) {
 
 
 UTIL_ERR vector_delete_idx(Vector *v, size_t idx) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (idx > v->size -1) return E_OUTOFBOUNDS;
 
     // move data below idx up one
@@ -193,7 +194,7 @@ UTIL_ERR vector_delete_idx(Vector *v, size_t idx) {
 
 
 UTIL_ERR vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*)) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!f) return E_EMPTY_ARG;
     if (!print) return E_EMPTY_FUNC;    
     if (v->size == 0) return E_NOOP;
@@ -207,7 +208,7 @@ UTIL_ERR vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*)) {
 
 
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*)) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!mapfunc) return E_EMPTY_FUNC;
 
     for (size_t i = 0; i < v->size; i++) {
@@ -221,7 +222,7 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*)) {
 
 Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return (Vector*)0;
     }
     if (!mapfunc) {
@@ -239,7 +240,7 @@ Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e) {
 
 Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return (Vector*)0;
     }
     if (!mapfunc) {
@@ -272,7 +273,7 @@ Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
 
 intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return -1;
     }
 
@@ -296,8 +297,8 @@ intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UT
     return -1;
 }
 
-
 // ###################### GENERIC VECTOR ######################
+
 // ###################### i32 VECTOR ######################
 
 Vec_i32 *vec_i32_new(size_t cap) {
@@ -357,7 +358,7 @@ Vec_i32 *vec_i32_copy(const Vec_i32 *v) {
 
 
 UTIL_ERR vec_i32_add_back(Vec_i32 *v, int32_t elem) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (v->size == v->cap) vec_i32_resize(v);
     
     v->data[v->size] = elem;
@@ -368,7 +369,7 @@ UTIL_ERR vec_i32_add_back(Vec_i32 *v, int32_t elem) {
 
 
 UTIL_ERR vec_i32_add_front(Vec_i32 *v, int32_t elem) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!elem) return E_EMPTY_ARG;
     if (v->size == v->cap) vec_i32_resize(v);
 
@@ -387,7 +388,7 @@ UTIL_ERR vec_i32_add_front(Vec_i32 *v, int32_t elem) {
 
 
 UTIL_ERR vec_i32_insert(Vec_i32 *v, int32_t elem, size_t idx) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (v->size == v->cap) vec_i32_resize(v);
 
     // move all elements down one
@@ -406,7 +407,7 @@ UTIL_ERR vec_i32_insert(Vec_i32 *v, int32_t elem, size_t idx) {
 
 int32_t vec_i32_get(const Vec_i32 *v, size_t idx, UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return 0;
     }
     if (idx > v->size -1) {
@@ -428,7 +429,7 @@ void vec_i32_clear(Vec_i32 *v) {
 
 
 UTIL_ERR vec_i32_delete_idx(Vec_i32 *v, size_t idx) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (idx >= v->size) return E_OUTOFBOUNDS;
 
     // move data below idx up one
@@ -446,7 +447,7 @@ UTIL_ERR vec_i32_delete_idx(Vec_i32 *v, size_t idx) {
 
 
 UTIL_ERR vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!f) return E_EMPTY_ARG;
     if (!print) return E_EMPTY_FUNC;    
     if (v->size == 0) return E_NOOP;
@@ -460,7 +461,7 @@ UTIL_ERR vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*)) 
 
 
 UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*)) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!mapfunc) return E_EMPTY_FUNC;
 
     for (size_t i = 0; i < v->size; i++) {
@@ -473,7 +474,7 @@ UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*)) {
 
 Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return (Vec_i32*)0;
     }
     if (!mapfunc) {
@@ -491,7 +492,7 @@ Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e
 
 Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return (Vec_i32*)0;
     }
     if (!mapfunc) {
@@ -523,7 +524,7 @@ Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) 
 
 intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int32_t), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return -1;
     }
 
@@ -603,7 +604,7 @@ Vec_char *vec_char_copy(const Vec_char *v) {
 
 
 UTIL_ERR vec_char_add_back(Vec_char *v, char elem) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (v->size == v->cap) vec_char_resize(v);
     
     v->data[v->size] = elem;
@@ -614,7 +615,7 @@ UTIL_ERR vec_char_add_back(Vec_char *v, char elem) {
 
 
 UTIL_ERR vec_char_add_front(Vec_char *v, char elem) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!elem) return E_EMPTY_ARG;
     if (v->size == v->cap) vec_char_resize(v);
 
@@ -633,7 +634,7 @@ UTIL_ERR vec_char_add_front(Vec_char *v, char elem) {
 
 
 UTIL_ERR vec_char_insert(Vec_char *v, char elem, size_t idx) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (v->size == v->cap) vec_char_resize(v);
 
     // move all elements down one
@@ -652,7 +653,7 @@ UTIL_ERR vec_char_insert(Vec_char *v, char elem, size_t idx) {
 
 char vec_char_get(const Vec_char *v, size_t idx, UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return '\0';
     }
     if (idx > v->size -1) {
@@ -674,7 +675,7 @@ void vec_char_clear(Vec_char *v) {
 
 
 UTIL_ERR vec_char_delete_idx(Vec_char *v, size_t idx) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (idx >= v->size) return E_OUTOFBOUNDS;
 
     // move data below idx up one
@@ -692,7 +693,7 @@ UTIL_ERR vec_char_delete_idx(Vec_char *v, size_t idx) {
 
 
 UTIL_ERR vec_char_print(const Vec_char *v, FILE *f, void(*print)(char, FILE*)) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!f) return E_EMPTY_ARG;
     if (!print) return E_EMPTY_FUNC;    
     if (v->size == 0) return E_NOOP;
@@ -706,7 +707,7 @@ UTIL_ERR vec_char_print(const Vec_char *v, FILE *f, void(*print)(char, FILE*)) {
 
 
 UTIL_ERR vec_char_map(Vec_char *v, void(*mapfunc)(char*)) {
-    if (!v) return E_EMPTY_VEC;
+    if (!v) return E_EMPTY_OBJ;
     if (!mapfunc) return E_EMPTY_FUNC;
 
     for (size_t i = 0; i < v->size; i++) {
@@ -719,7 +720,7 @@ UTIL_ERR vec_char_map(Vec_char *v, void(*mapfunc)(char*)) {
 
 Vec_char *vec_char_map_new(const Vec_char *v, void(*mapfunc)(char*), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return (Vec_char*)0;
     }
     if (!mapfunc) {
@@ -737,7 +738,7 @@ Vec_char *vec_char_map_new(const Vec_char *v, void(*mapfunc)(char*), UTIL_ERR *e
 
 Vec_char *vec_char_filter(const Vec_char *v, bool(*mapfunc)(char), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return (Vec_char*)0;
     }
     if (!mapfunc) {
@@ -769,7 +770,7 @@ Vec_char *vec_char_filter(const Vec_char *v, bool(*mapfunc)(char), UTIL_ERR *e) 
 
 intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), UTIL_ERR *e) {
     if (!v) {
-        *e = E_EMPTY_VEC;
+        *e = E_EMPTY_OBJ;
         return -1;
     }
 
@@ -788,7 +789,4 @@ intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), U
     return -1;
 }
 
-
 // ###################### char VECTOR ######################
-
-

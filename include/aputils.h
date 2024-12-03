@@ -1,11 +1,6 @@
 /*
  *    aputils
- *
  *    a collection of general functions and structures
- *
- *    - vector
- *    - linked list
- *    - hash table
  *
  */
 
@@ -22,13 +17,14 @@
 
 enum _UTILERR {
     E_SUCCESS = 0,
-    E_EMPTY_VEC = -1,
+    E_EMPTY_OBJ = -1,
     E_EMPTY_ARG = -2,
     E_BAD_ALLOC = -3,
     E_MEMCOPY = -4,
     E_OUTOFBOUNDS = -5,
     E_EMPTY_FUNC = -6,
     E_NOOP = -7,                // no operation to perform
+    E_NODATA = -8,
 };
 typedef enum _UTILERR UTIL_ERR;
 
@@ -62,7 +58,7 @@ void *vector_get(const Vector*, size_t, UTIL_ERR *e);
 UTIL_ERR vector_clear(Vector*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vector_delete_idx(Vector*, size_t);
-// frint the vector to stream using passed print function
+// print the vector to stream using passed print function
 UTIL_ERR vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
@@ -103,7 +99,7 @@ int32_t vec_i32_get(const Vec_i32 *v, size_t idx, UTIL_ERR *e);
 void vec_i32_clear(Vec_i32*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vec_i32_delete_idx(Vec_i32*, size_t);
-// frint the vector to stream using passed print function
+// print the vector to stream using passed print function
 UTIL_ERR vec_i32_print(const Vec_i32 *v, FILE *f, void(*print)(int32_t, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
@@ -144,7 +140,7 @@ char vec_char_get(const Vec_char *v, size_t idx, UTIL_ERR *e);
 void vec_char_clear(Vec_char*);
 // remove element at index, and shift remaning elements up one
 UTIL_ERR vec_char_delete_idx(Vec_char*, size_t idx);
-// frint the vector to stream using passed print function
+// print the vector to stream using passed print function
 UTIL_ERR vec_char_print(const Vec_char *v, FILE *f, void(*print)(char, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
@@ -162,6 +158,40 @@ intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), U
 
 
 // ########################### Linked Lists ###########################
+typedef struct aputil_node {
+    void *data;
+    struct aputil_node *next;
+    struct aputil_node *prev;
+} APUTIL_Node;
+
+typedef struct {
+    APUTIL_Node *head;
+    APUTIL_Node *tail;
+    size_t cnt;
+    void (*free)(void*);        // data free function
+    char desc[128];
+} APUTIL_LList;
+
+// make new list
+APUTIL_LList *aputil_llist_new(void (*free)(void*), const char *desc, UTIL_ERR*);
+// free the list
+void aputil_llist_free(APUTIL_LList*);
+// print node using provided data element function
+void aputil_llist_print_node(APUTIL_Node *node, FILE *f, void (*data_print)(FILE*, void*));
+// print container and entire list using provided data element function
+void aputil_llist_print_all(APUTIL_LList *lst, FILE *f, void (*data_print)(FILE*, void*));
+
+
+// add node to front (new head)
+UTIL_ERR aputil_llist_push(APUTIL_LList*, void*);
+// return data from head node and remove from list
+void *aputil_llist_pop(APUTIL_LList*, UTIL_ERR*);
+// add node to back (new tail)
+UTIL_ERR aputil_llist_push_back(APUTIL_LList*, void*);
+// return data from tail node and remove from list
+void *aputil_llist_pop_back(APUTIL_LList*, UTIL_ERR*);
+
+
 // ########################### Linked Lists ###########################
 
 // ########################### Hash Table ###########################

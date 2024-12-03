@@ -338,9 +338,6 @@ void test_function_vector_in(void) {
 
 }
 
-
-
-
 //################ Generic Vector ################
 //################ i32 Vector ################
 
@@ -948,7 +945,6 @@ void test_function_vec_char_in(void) {
 }
 
 //################ char Vector ################
-
 
 int main(void) {
 
