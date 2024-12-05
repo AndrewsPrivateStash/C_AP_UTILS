@@ -3,7 +3,6 @@
  *      > data is void pointer
  *      
  *      ToDo
- *          - map, map_new
  *          - filter
  *          - swap nodes
  *          - sort
@@ -13,7 +12,8 @@
 
 
 APUTIL_LList *aputil_llist_new(
-    void (*free)(void*),    // free data, can be null, and won't free data
+    void (*free)(void*),                // free data, can be null, used when preserve = false in free function
+    void *(*copydata)(const void*),     // copy data, can be null, and copies will be shallow
     const char *desc,
     UTIL_ERR *e
 ) {
@@ -27,6 +27,7 @@ APUTIL_LList *aputil_llist_new(
     new_list->tail = NULL;
     new_list->cnt = 0;
     new_list->free = free;
+    new_list->copydata = copydata;
     strncpy(new_list->desc, desc, sizeof(new_list->desc)-1);
 
     return new_list;
@@ -173,7 +174,7 @@ void *aputil_llist_pop_back(APUTIL_LList *lst, UTIL_ERR *e) {
 }
 
 
-UTIL_ERR aputil_llist_delete(APUTIL_LList *lst, APUTIL_Node *n) {
+UTIL_ERR aputil_llist_delete(APUTIL_LList *lst, APUTIL_Node *n, bool preserve) {
     // frees data at node if free function defined
     if (!lst) return E_EMPTY_OBJ;
     if (!n) return E_EMPTY_ARG;
@@ -195,7 +196,7 @@ UTIL_ERR aputil_llist_delete(APUTIL_LList *lst, APUTIL_Node *n) {
         next_node->prev = prev_node;
     }
 
-    if (lst->free) lst->free(n->data);
+    if (lst->free && !preserve) lst->free(n->data);
     free(n);
     lst->cnt--;
 
@@ -203,7 +204,19 @@ UTIL_ERR aputil_llist_delete(APUTIL_LList *lst, APUTIL_Node *n) {
 }
 
 
-APUTIL_Node *aputil_llist_copy_node(const APUTIL_Node *n, UTIL_ERR *e) {
+static void copy_node_values(APUTIL_Node *n_dest, const APUTIL_Node *n_src) {
+    if (!n_dest || !n_src) return;
+    n_dest->data = n_src->data;
+    n_dest->next = n_src->next;
+    n_dest->prev = n_src->prev;
+}
+
+APUTIL_Node *aputil_llist_copy_node(const APUTIL_LList *lst, const APUTIL_Node *n, bool deep, UTIL_ERR *e) {
+    if (!lst) {
+        *e = E_EMPTY_OBJ;
+        return (APUTIL_Node*)0;
+    }
+
     if (!n) {
         *e = E_EMPTY_ARG;
         return (APUTIL_Node*)0;
@@ -215,29 +228,26 @@ APUTIL_Node *aputil_llist_copy_node(const APUTIL_Node *n, UTIL_ERR *e) {
         return (APUTIL_Node*)0;
     }
 
-    // shallow copy
-    new_node->data = n->data;
-    new_node->next = n->next;
-    new_node->prev = n->prev;
+    if (lst->copydata && deep) {
+        // deep copy
+        copy_node_values(new_node, n);
+        new_node->data = lst->copydata(n->data);
+    } else {
+        // shallow copy
+        copy_node_values(new_node, n);
+    }
 
     return new_node;
 }
 
 
-// static void copy_node_values(APUTIL_Node *n_dest, APUTIL_Node *n_src) {
-//     if (!n_dest || !n_src) return;
-//     n_dest->data = n_src->data;
-//     n_dest->next = n_src->next;
-//     n_dest->prev = n_src->prev;
-// }
-
-APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, UTIL_ERR *e) {
+APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, bool deep, UTIL_ERR *e) {
     if (!lst) {
         *e = E_EMPTY_OBJ;
         return (APUTIL_LList*)0;
     }
 
-    APUTIL_LList *new_list = aputil_llist_new(lst->free, lst->desc, e);
+    APUTIL_LList *new_list = aputil_llist_new(lst->free, lst->copydata, lst->desc, e);
     if (!new_list || *e) {
         if (new_list) aputil_llist_free(new_list, true);
         if (*e == E_SUCCESS) *e = E_BAD_ALLOC;
@@ -246,9 +256,18 @@ APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, UTIL_ERR *e) {
 
     APUTIL_Node *cur = lst->head;
     while (cur) {
-        *e = aputil_llist_push_back(new_list, cur->data);
+        if (new_list->copydata && deep) {
+            // deep copy
+            *e = aputil_llist_push_back(new_list, new_list->copydata(cur->data));
+        } else {
+            // shallow copy
+            *e = aputil_llist_push_back(new_list, cur->data);
+        }
+        
         if (*e) {
-            aputil_llist_free(new_list, true);
+            // free the data if newly allocated from deep copy
+            bool pres = new_list->copydata && deep ? false: true;
+            aputil_llist_free(new_list, pres);
             return (APUTIL_LList*)0;
         }
         cur = cur->next;
@@ -258,17 +277,15 @@ APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, UTIL_ERR *e) {
 }
 
 
-
-
-
-UTIL_ERR aputil_llist_clear(APUTIL_LList *lst) {
+UTIL_ERR aputil_llist_clear(APUTIL_LList *lst, bool preserve) {
     if (!lst) return E_EMPTY_OBJ;
     if (!lst->head) return E_SUCCESS;
 
     APUTIL_Node *cur = lst->head;
     UTIL_ERR del_err;
+    bool pres = lst->free && !preserve ? false: true;
     while (cur) {
-        del_err = aputil_llist_delete(lst, cur);
+        del_err = aputil_llist_delete(lst, cur, pres);
         if (del_err) return del_err;
         cur = lst->head;
     }
@@ -317,4 +334,43 @@ APUTIL_Node *aputil_llist_in(const APUTIL_LList *lst, const void *elem, bool(*eq
     return (APUTIL_Node*)0;    
 }
 
+UTIL_ERR aputil_llist_map(APUTIL_LList *lst, void(*mapfunc)(void*)) {
+    if (!lst) return E_EMPTY_OBJ;
+    if (!mapfunc) return E_EMPTY_FUNC;
+    if (!lst->head) return E_NODATA;
+
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        mapfunc(cur->data);
+        cur = cur->next;
+    }
+
+    return E_SUCCESS;
+}
+
+
+APUTIL_LList *aputil_llist_map_new(APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e) {
+    if (!lst) {
+        *e = E_EMPTY_OBJ;
+        return (APUTIL_LList*)0;
+    }
+
+    if (!mapfunc || !lst->copydata) {
+        *e = E_EMPTY_FUNC;
+        return (APUTIL_LList*)0;
+    }
+
+    APUTIL_LList *new_list = aputil_llist_copy(lst, true, e);
+    if (*e) {
+        if (new_list) aputil_llist_free(new_list, false);
+        return (APUTIL_LList*)0;
+    }
+    *e = aputil_llist_map(new_list, mapfunc);
+    if (*e) {
+        aputil_llist_free(new_list, false);
+        return (APUTIL_LList*)0;
+    }
+
+    return new_list;
+}
 

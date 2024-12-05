@@ -46,7 +46,8 @@ typedef struct {
 Vector *vector_new(size_t, size_t);
 // free the vector and its data
 void vector_free(Vector*);
-// return a copy of the vector
+// return a shallow copy of the vector
+// if data contains pointers, only the pointers are copied
 Vector *vector_copy(const Vector *v);
 
 // add an element to the back of the vector (Vector, address of element)
@@ -66,7 +67,8 @@ UTIL_ERR vector_print(const Vector *v, FILE *f, void(*print)(void*, FILE*));
 
 // map the supplied function pointer over the vector elements (in place)
 UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
-// map the supplied function pointer over the vector elements (return copy)
+// map the supplied function pointer over the vector elements (return shallow copy)
+// if data contains pointers, only the pointers are copied
 Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
 Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e);
@@ -172,11 +174,12 @@ typedef struct {
     APUTIL_Node *tail;
     size_t cnt;
     void (*free)(void*);        // data free function
+    void *(*copydata)(const void*);   // copy data fucntion
     char desc[128];
 } APUTIL_LList;
 
-// make new list
-APUTIL_LList *aputil_llist_new(void (*free)(void*), const char *desc, UTIL_ERR*);
+// make new list with optional data free and copy functions
+APUTIL_LList *aputil_llist_new(void (*free)(void*), void *(*copydata)(const void*), const char *desc, UTIL_ERR*);
 // free the list and optionally free data
 void aputil_llist_free(APUTIL_LList*, bool preserve);
 // print node using provided data element function
@@ -193,26 +196,28 @@ UTIL_ERR aputil_llist_push_back(APUTIL_LList*, void*);
 // return data from tail node and remove from list
 void *aputil_llist_pop_back(APUTIL_LList*, UTIL_ERR*);
 // delete provded node
-UTIL_ERR aputil_llist_delete(APUTIL_LList*, APUTIL_Node*);
+UTIL_ERR aputil_llist_delete(APUTIL_LList*, APUTIL_Node*, bool preserve);
 // shallow copy node and return new node allocation
-APUTIL_Node *aputil_llist_copy_node(const APUTIL_Node*, UTIL_ERR*);
+APUTIL_Node *aputil_llist_copy_node(const APUTIL_LList *, const APUTIL_Node*, bool deep, UTIL_ERR*);
 // copy list and return new allocation
-APUTIL_LList *aputil_llist_copy(const APUTIL_LList*, UTIL_ERR*);
+APUTIL_LList *aputil_llist_copy(const APUTIL_LList*, bool deep, UTIL_ERR*);
 // clear the list of nodes and free data memory if free-func set
-UTIL_ERR aputil_llist_clear(APUTIL_LList*);
+UTIL_ERR aputil_llist_clear(APUTIL_LList*, bool preserve);
 
 // does node address exist in list
 bool aputil_llist_node_exists(const APUTIL_LList*, const APUTIL_Node*);
 // does data element exist in list, returns the node if so
 APUTIL_Node *aputil_llist_in(const APUTIL_LList*, const void *elem, bool(*equalfunc)(const void*, const void*), UTIL_ERR *e);
-
+// map the supplied function over the list elements (in place)
+UTIL_ERR aputil_llist_map(APUTIL_LList *lst, void(*mapfunc)(void*));
+// map the supplied function over the list elements (return deep copy)
+APUTIL_LList *aputil_llist_map_new(APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e);
 
 
 // ########################### Linked Lists ###########################
 
 // ########################### Hash Table ###########################
 // ########################### Hash Table ###########################
-
 
 
 
