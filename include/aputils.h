@@ -211,7 +211,7 @@ APUTIL_Node *aputil_llist_in(const APUTIL_LList*, const void *elem, bool(*equalf
 // map the supplied function over the list elements (in place)
 UTIL_ERR aputil_llist_map(APUTIL_LList *lst, void(*mapfunc)(void*));
 // map the supplied function over the list elements (return deep copy)
-APUTIL_LList *aputil_llist_map_new(APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e);
+APUTIL_LList *aputil_llist_map_new(const APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e);
 
 
 // ########################### Linked Lists ###########################

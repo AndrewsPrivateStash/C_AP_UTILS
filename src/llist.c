@@ -175,7 +175,7 @@ void *aputil_llist_pop_back(APUTIL_LList *lst, UTIL_ERR *e) {
 
 
 UTIL_ERR aputil_llist_delete(APUTIL_LList *lst, APUTIL_Node *n, bool preserve) {
-    // frees data at node if free function defined
+    // frees data at node if free function defined and not preserved
     if (!lst) return E_EMPTY_OBJ;
     if (!n) return E_EMPTY_ARG;
     if (!aputil_llist_node_exists(lst, n)) return E_DOESNT_EXIST;
@@ -349,7 +349,7 @@ UTIL_ERR aputil_llist_map(APUTIL_LList *lst, void(*mapfunc)(void*)) {
 }
 
 
-APUTIL_LList *aputil_llist_map_new(APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e) {
+APUTIL_LList *aputil_llist_map_new(const APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e) {
     if (!lst) {
         *e = E_EMPTY_OBJ;
         return (APUTIL_LList*)0;
