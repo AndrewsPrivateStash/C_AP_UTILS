@@ -25,8 +25,11 @@ enum _UTILERR {
     E_EMPTY_FUNC = -6,
     E_NOOP = -7,                // no operation to perform
     E_NODATA = -8,
+    E_DOESNT_EXIST = -9,        // element doesn't exist
 };
 typedef enum _UTILERR UTIL_ERR;
+const char *UTIL_ERR_PRINT(UTIL_ERR);
+
 
 
 // ########################### VECTORS ###########################
@@ -174,13 +177,12 @@ typedef struct {
 
 // make new list
 APUTIL_LList *aputil_llist_new(void (*free)(void*), const char *desc, UTIL_ERR*);
-// free the list
-void aputil_llist_free(APUTIL_LList*);
+// free the list and optionally free data
+void aputil_llist_free(APUTIL_LList*, bool preserve);
 // print node using provided data element function
-void aputil_llist_print_node(APUTIL_Node *node, FILE *f, void (*data_print)(FILE*, void*));
+void aputil_llist_print_node(const APUTIL_Node *node, FILE *f, void (*data_print)(FILE*, void*));
 // print container and entire list using provided data element function
-void aputil_llist_print_all(APUTIL_LList *lst, FILE *f, void (*data_print)(FILE*, void*));
-
+void aputil_llist_print_all(const APUTIL_LList *lst, FILE *f, void (*data_print)(FILE*, void*));
 
 // add node to front (new head)
 UTIL_ERR aputil_llist_push(APUTIL_LList*, void*);
@@ -190,12 +192,28 @@ void *aputil_llist_pop(APUTIL_LList*, UTIL_ERR*);
 UTIL_ERR aputil_llist_push_back(APUTIL_LList*, void*);
 // return data from tail node and remove from list
 void *aputil_llist_pop_back(APUTIL_LList*, UTIL_ERR*);
+// delete provded node
+UTIL_ERR aputil_llist_delete(APUTIL_LList*, APUTIL_Node*);
+// shallow copy node and return new node allocation
+APUTIL_Node *aputil_llist_copy_node(const APUTIL_Node*, UTIL_ERR*);
+// copy list and return new allocation
+APUTIL_LList *aputil_llist_copy(const APUTIL_LList*, UTIL_ERR*);
+// clear the list of nodes and free data memory if free-func set
+UTIL_ERR aputil_llist_clear(APUTIL_LList*);
+
+// does node address exist in list
+bool aputil_llist_node_exists(const APUTIL_LList*, const APUTIL_Node*);
+// does data element exist in list, returns the node if so
+APUTIL_Node *aputil_llist_in(const APUTIL_LList*, const void *elem, bool(*equalfunc)(const void*, const void*), UTIL_ERR *e);
+
 
 
 // ########################### Linked Lists ###########################
 
 // ########################### Hash Table ###########################
 // ########################### Hash Table ###########################
+
+
 
 
 

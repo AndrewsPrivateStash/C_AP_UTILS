@@ -3,12 +3,9 @@
  *      > data is void pointer
  *      
  *      ToDo
- *          - delete node
- *          - swap nodes
- *          - clear
- *          - in
  *          - map, map_new
  *          - filter
+ *          - swap nodes
  *          - sort
  */
 
@@ -37,7 +34,7 @@ APUTIL_LList *aputil_llist_new(
 }
 
 
-void aputil_llist_free(APUTIL_LList *lst) {
+void aputil_llist_free(APUTIL_LList *lst, bool preserve) {
     if (!lst) return;
     if (!lst->head) {
         free(lst);
@@ -49,11 +46,31 @@ void aputil_llist_free(APUTIL_LList *lst) {
     while (cur) {
         prev = cur;
         cur = cur->next;
-        if (lst->free) lst->free(prev->data);
+        if (lst->free && !preserve) lst->free(prev->data);
         free(prev);
     }
     free(lst);
 
+}
+
+
+void aputil_llist_print_node(const APUTIL_Node *node, FILE *f, void (*data_print)(FILE*, void*)) {
+    if (!node || !f || !data_print) return;
+
+    fprintf(f, "cur: %p\nnext: %p\nprev: %p\n", node, node->next, node->prev);
+    data_print(f, node->data);
+}
+
+void aputil_llist_print_all(const APUTIL_LList *lst, FILE *f, void (*data_print)(FILE*, void*)) {
+    if (!lst || !f || !data_print) return;
+
+    fprintf(f, "list: %p\t%s: cnt:%lu\nhead:%p\ttail:%p\n\n", lst, lst->desc, lst->cnt, lst->head, lst->tail);
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        aputil_llist_print_node(cur, f, data_print);
+        fprintf(f, "\n");
+        cur = cur->next;
+    }
 }
 
 
@@ -156,23 +173,148 @@ void *aputil_llist_pop_back(APUTIL_LList *lst, UTIL_ERR *e) {
 }
 
 
+UTIL_ERR aputil_llist_delete(APUTIL_LList *lst, APUTIL_Node *n) {
+    // frees data at node if free function defined
+    if (!lst) return E_EMPTY_OBJ;
+    if (!n) return E_EMPTY_ARG;
+    if (!aputil_llist_node_exists(lst, n)) return E_DOESNT_EXIST;
+    
+    APUTIL_Node *prev_node = n->prev, *next_node = n->next;
+    
+    if (n == lst->head) {
+        lst->head = next_node;
+        if (next_node) next_node->prev = NULL;
+        else lst->tail = NULL;
 
+    } else if (n == lst->tail) {
+        lst->tail = prev_node;
+        if (prev_node) prev_node->next = NULL;
 
-void aputil_llist_print_node(APUTIL_Node *node, FILE *f, void (*data_print)(FILE*, void*)) {
-    if (!node || !f || !data_print) return;
+    } else {
+        prev_node->next = next_node;
+        next_node->prev = prev_node;
+    }
 
-    fprintf(f, "cur: %p\nnext: %p\nprev: %p\n", node, node->next, node->prev);
-    data_print(f, node->data);
+    if (lst->free) lst->free(n->data);
+    free(n);
+    lst->cnt--;
+
+    return E_SUCCESS;
 }
 
-void aputil_llist_print_all(APUTIL_LList *lst, FILE *f, void (*data_print)(FILE*, void*)) {
-    if (!lst || !f || !data_print) return;
 
-    fprintf(f, "list: %p\t%s\n\n", lst, lst->desc);
+APUTIL_Node *aputil_llist_copy_node(const APUTIL_Node *n, UTIL_ERR *e) {
+    if (!n) {
+        *e = E_EMPTY_ARG;
+        return (APUTIL_Node*)0;
+    }
+
+    APUTIL_Node *new_node = make_node();
+    if (!new_node) {
+        *e = E_BAD_ALLOC;
+        return (APUTIL_Node*)0;
+    }
+
+    // shallow copy
+    new_node->data = n->data;
+    new_node->next = n->next;
+    new_node->prev = n->prev;
+
+    return new_node;
+}
+
+
+// static void copy_node_values(APUTIL_Node *n_dest, APUTIL_Node *n_src) {
+//     if (!n_dest || !n_src) return;
+//     n_dest->data = n_src->data;
+//     n_dest->next = n_src->next;
+//     n_dest->prev = n_src->prev;
+// }
+
+APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, UTIL_ERR *e) {
+    if (!lst) {
+        *e = E_EMPTY_OBJ;
+        return (APUTIL_LList*)0;
+    }
+
+    APUTIL_LList *new_list = aputil_llist_new(lst->free, lst->desc, e);
+    if (!new_list || *e) {
+        if (new_list) aputil_llist_free(new_list, true);
+        if (*e!=E_SUCCESS) *e = E_BAD_ALLOC;
+        return (APUTIL_LList*)0;
+    }
+
     APUTIL_Node *cur = lst->head;
     while (cur) {
-        aputil_llist_print_node(cur, f, data_print);
-        fprintf(f, "\n");
+        *e = aputil_llist_push_back(new_list, cur->data);
+        if (*e) {
+            aputil_llist_free(new_list, true);
+            return (APUTIL_LList*)0;
+        }
         cur = cur->next;
     }
+
+    return new_list;
 }
+
+
+
+
+
+UTIL_ERR aputil_llist_clear(APUTIL_LList *lst) {
+    if (!lst) return E_EMPTY_OBJ;
+    if (!lst->head) return E_SUCCESS;
+
+    APUTIL_Node *cur = lst->head;
+    UTIL_ERR del_err;
+    while (cur) {
+        del_err = aputil_llist_delete(lst, cur);
+        if (del_err) return del_err;
+        cur = lst->head;
+    }
+
+    return E_SUCCESS;
+}
+
+
+bool aputil_llist_node_exists(const APUTIL_LList *lst, const APUTIL_Node *n) {
+    if (!lst) return false;
+    if (!n) return false;
+    if (!lst->head) return false;
+
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        if (n == cur) return true;
+        cur = cur->next;
+    }
+    
+    return false;
+}
+
+
+APUTIL_Node *aputil_llist_in(const APUTIL_LList *lst, const void *elem, bool(*equalfunc)(const void*, const void*), UTIL_ERR *e) {
+    if (!lst) {
+        *e = E_EMPTY_OBJ;
+        return (APUTIL_Node*)0;
+    }
+
+    if (!elem) {
+        *e = E_EMPTY_ARG;
+        return (APUTIL_Node*)0;
+    }
+
+    if (!equalfunc) {
+        *e = E_EMPTY_FUNC;
+        return (APUTIL_Node*)0;
+    }
+
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        if (equalfunc(elem, cur->data)) return cur;
+        cur = cur->next;
+    }
+   
+    return (APUTIL_Node*)0;    
+}
+
+
