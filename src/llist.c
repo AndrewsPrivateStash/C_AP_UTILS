@@ -3,7 +3,6 @@
  *      > data is void pointer
  *      
  *      ToDo
- *          - filter
  *          - swap nodes
  *          - sort
  */
@@ -355,6 +354,11 @@ APUTIL_LList *aputil_llist_map_new(const APUTIL_LList *lst, void(*mapfunc)(void*
         return (APUTIL_LList*)0;
     }
 
+    if (!lst->head) {
+        *e = E_NODATA;
+        return (APUTIL_LList*)0;
+    }
+
     if (!mapfunc || !lst->copydata) {
         *e = E_EMPTY_FUNC;
         return (APUTIL_LList*)0;
@@ -374,3 +378,65 @@ APUTIL_LList *aputil_llist_map_new(const APUTIL_LList *lst, void(*mapfunc)(void*
     return new_list;
 }
 
+static APUTIL_LList *copy_list_container(const APUTIL_LList *lst, const char* str_app) {
+    UTIL_ERR e = E_SUCCESS;
+
+    char buff[256] = {0};
+    strcpy(buff, lst->desc);
+    if (strlen(str_app)) {
+        strcat(buff, ": ");
+        strcat(buff, str_app);
+    }
+
+    APUTIL_LList *new_list = aputil_llist_new(
+        lst->free,
+        lst->copydata,
+        buff,
+        &e
+    );
+    if (!new_list || e) return (APUTIL_LList*)0;
+
+    return new_list;
+}
+
+APUTIL_LList *aputil_llist_filter(const APUTIL_LList *lst, bool(*filterfunc)(void*), bool copy, UTIL_ERR *e) {
+    if (!lst) {
+        *e = E_EMPTY_OBJ;
+        return (APUTIL_LList*)0;
+    }
+
+    if (!lst->head) {
+        *e = E_NODATA;
+        return (APUTIL_LList*)0;
+    }
+
+    if (!filterfunc) {
+        *e = E_EMPTY_FUNC;
+        return (APUTIL_LList*)0;
+    }
+
+    if (copy && !lst->copydata) {
+        *e = E_EMPTY_FUNC;
+        return (APUTIL_LList*)0;
+    }
+
+    APUTIL_LList *new_list = copy_list_container(lst, "filtered");
+    if (!new_list) {
+        *e = E_BAD_ALLOC;
+        return (APUTIL_LList*)0;
+    }
+    
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        if (filterfunc(cur->data)) {
+            if (copy) {
+                aputil_llist_push_back(new_list, new_list->copydata(cur->data));
+            } else {
+                aputil_llist_push_back(new_list, cur->data);
+            }
+        }
+        cur = cur->next;
+    }
+
+    return new_list;
+}

@@ -420,6 +420,35 @@ void test_function_llist_map_new(void) {
 }
 
 
+static bool llist_filter(void *d) {
+    size_t sum = 0;
+    char *c = d;
+    while (*c) {
+        sum += *c;
+        c++;
+    }
+    return sum % 2 == 0;
+}
+
+void test_function_llist_filter(void) {
+    UTIL_ERR e = E_SUCCESS;
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_filter test", &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    for (int i = 0; i<10; i++) {
+        char tmp[64] = {0};
+        sprintf(tmp, "the %dth string!", i);
+        aputil_llist_push(lst,llist_data(tmp));
+    }
+
+    APUTIL_LList *lst_flt = aputil_llist_filter(lst, llist_filter, true, &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_NOT_NULL(lst_flt);
+    aputil_llist_print_all(lst_flt, stdout, llist_print);
+
+    aputil_llist_free(lst_flt, false);
+    aputil_llist_free(lst, false);
+}
 
 
 
@@ -441,6 +470,7 @@ int main(void) {
      RUN_TEST(test_function_llist_copy);
      RUN_TEST(test_function_llist_map);
      RUN_TEST(test_function_llist_map_new);
+     RUN_TEST(test_function_llist_filter);
 
     return UNITY_END();
 }
