@@ -240,7 +240,7 @@ APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, UTIL_ERR *e) {
     APUTIL_LList *new_list = aputil_llist_new(lst->free, lst->desc, e);
     if (!new_list || *e) {
         if (new_list) aputil_llist_free(new_list, true);
-        if (*e!=E_SUCCESS) *e = E_BAD_ALLOC;
+        if (*e == E_SUCCESS) *e = E_BAD_ALLOC;
         return (APUTIL_LList*)0;
     }
 
