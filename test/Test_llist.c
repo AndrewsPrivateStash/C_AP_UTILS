@@ -450,6 +450,24 @@ void test_function_llist_filter(void) {
     aputil_llist_free(lst, false);
 }
 
+void test_function_llist_nodeswap(void) {
+    UTIL_ERR e = E_SUCCESS;
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_nodeswap test", &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    for (int i = 0; i<2; i++) {
+        char tmp[64] = {0};
+        sprintf(tmp, "the %dth string!", i);
+        aputil_llist_push(lst,llist_data(tmp));
+    }
+    aputil_llist_print_all(lst, stdout, llist_print);
+    e = aputil_llist_nodeswap(lst->head, lst->tail);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    aputil_llist_print_all(lst, stdout, llist_print);
+
+    aputil_llist_free(lst, false);   
+}
+
 
 
 int main(void) {
@@ -471,6 +489,7 @@ int main(void) {
      RUN_TEST(test_function_llist_map);
      RUN_TEST(test_function_llist_map_new);
      RUN_TEST(test_function_llist_filter);
+     RUN_TEST(test_function_llist_nodeswap);
 
     return UNITY_END();
 }

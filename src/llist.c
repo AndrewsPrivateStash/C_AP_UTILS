@@ -3,7 +3,6 @@
  *      > data is void pointer
  *      
  *      ToDo
- *          - swap nodes
  *          - sort
  */
 
@@ -439,4 +438,15 @@ APUTIL_LList *aputil_llist_filter(const APUTIL_LList *lst, bool(*filterfunc)(voi
     }
 
     return new_list;
+}
+
+
+UTIL_ERR aputil_llist_nodeswap(APUTIL_Node *n1, APUTIL_Node *n2) {
+    if (!n1 || !n2) return E_EMPTY_ARG;
+
+    void *tmp = n1->data;
+    n1->data = n2->data;
+    n2->data = tmp;
+
+    return E_SUCCESS;
 }

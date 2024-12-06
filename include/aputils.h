@@ -214,6 +214,8 @@ UTIL_ERR aputil_llist_map(APUTIL_LList *lst, void(*mapfunc)(void*));
 APUTIL_LList *aputil_llist_map_new(const APUTIL_LList *lst, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new list with elements filtered based on passed function (option to copy data)
 APUTIL_LList *aputil_llist_filter(const APUTIL_LList *lst, bool(*filterfunc)(void*), bool copy, UTIL_ERR *e);
+// swap two nodes in list (does not preserve node address-data association)
+UTIL_ERR aputil_llist_nodeswap(APUTIL_Node *n1, APUTIL_Node *n2);
 
 // ########################### Linked Lists ###########################
 
