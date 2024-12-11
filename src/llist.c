@@ -4,6 +4,7 @@
  *      
  *      ToDo
  *          - sort
+ *          - reverse
  */
 
 #include "../include/aputils.h"
@@ -12,6 +13,7 @@
 APUTIL_LList *aputil_llist_new(
     void (*free)(void*),                // free data, can be null, used when preserve = false in free function
     void *(*copydata)(const void*),     // copy data, can be null, and copies will be shallow
+    int (*compare)(const void*, const void*),   // compare function, can be null, used to sort or otherwise compare two data elements
     const char *desc,
     UTIL_ERR *e
 ) {
@@ -26,6 +28,7 @@ APUTIL_LList *aputil_llist_new(
     new_list->cnt = 0;
     new_list->free = free;
     new_list->copydata = copydata;
+    new_list->compare = compare;
     strncpy(new_list->desc, desc, sizeof(new_list->desc)-1);
 
     return new_list;
@@ -102,7 +105,7 @@ UTIL_ERR aputil_llist_push(APUTIL_LList *lst, void *elem) {
 
 
 void *aputil_llist_pop(APUTIL_LList *lst, UTIL_ERR *e) {
-    // doesn't free data when popped, caller must free if alloced
+    // doesn't free data when popped, caller must free if allocated
     if (!lst) {
         *e =  E_EMPTY_OBJ;
         return (APUTIL_Node*)0;
@@ -245,7 +248,7 @@ APUTIL_LList *aputil_llist_copy(const APUTIL_LList *lst, bool deep, UTIL_ERR *e)
         return (APUTIL_LList*)0;
     }
 
-    APUTIL_LList *new_list = aputil_llist_new(lst->free, lst->copydata, lst->desc, e);
+    APUTIL_LList *new_list = aputil_llist_new(lst->free, lst->copydata, lst->compare, lst->desc, e);
     if (!new_list || *e) {
         if (new_list) aputil_llist_free(new_list, true);
         if (*e == E_SUCCESS) *e = E_BAD_ALLOC;
@@ -390,6 +393,7 @@ static APUTIL_LList *copy_list_container(const APUTIL_LList *lst, const char* st
     APUTIL_LList *new_list = aputil_llist_new(
         lst->free,
         lst->copydata,
+        lst->compare,
         buff,
         &e
     );
@@ -450,3 +454,28 @@ UTIL_ERR aputil_llist_nodeswap(APUTIL_Node *n1, APUTIL_Node *n2) {
 
     return E_SUCCESS;
 }
+
+
+bool aputil_llist_is_sorted(APUTIL_LList *lst, UTIL_ERR *e) {
+    if (!lst) {
+        *e = E_EMPTY_OBJ;
+        return true;
+    };
+    if (!lst->head) {
+        *e = E_NODATA;
+        return true;
+    }
+    if (!lst->compare) {
+        *e = E_EMPTY_FUNC;
+        return false;
+    }
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        if (cur->next) {
+            if (lst->compare(cur->data, cur->next->data) > 0) return false;
+        }
+        cur = cur->next;
+    }
+    return true;
+}
+

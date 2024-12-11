@@ -5,7 +5,11 @@
  *      > assumes all elements are of the same type
  * 
  *  i32 vector
- *  char vector     
+ *  char vector
+ *      
+ *      ToDo:
+ *          - sort (use qsort)
+ *          - reverse
  */
 
 #include "../include/aputils.h"

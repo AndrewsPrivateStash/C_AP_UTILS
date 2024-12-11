@@ -173,13 +173,14 @@ typedef struct {
     APUTIL_Node *head;
     APUTIL_Node *tail;
     size_t cnt;
-    void (*free)(void*);        // data free function
-    void *(*copydata)(const void*);   // copy data fucntion
+    void (*free)(void*);                        // data free function
+    void *(*copydata)(const void*);             // copy data fucntion
+    int (*compare)(const void*, const void*);   // compare function
     char desc[128];
 } APUTIL_LList;
 
 // make new list with optional data free and copy functions
-APUTIL_LList *aputil_llist_new(void (*free)(void*), void *(*copydata)(const void*), const char *desc, UTIL_ERR*);
+APUTIL_LList *aputil_llist_new(void (*free)(void*), void *(*copydata)(const void*), int (*compare)(const void*, const void*), const char *desc, UTIL_ERR*);
 // free the list and optionally free data
 void aputil_llist_free(APUTIL_LList*, bool preserve);
 // print node using provided data element function
@@ -216,13 +217,16 @@ APUTIL_LList *aputil_llist_map_new(const APUTIL_LList *lst, void(*mapfunc)(void*
 APUTIL_LList *aputil_llist_filter(const APUTIL_LList *lst, bool(*filterfunc)(void*), bool copy, UTIL_ERR *e);
 // swap two nodes in list (does not preserve node address-data association)
 UTIL_ERR aputil_llist_nodeswap(APUTIL_Node *n1, APUTIL_Node *n2);
+// is the list sorted
+bool aputil_llist_is_sorted(APUTIL_LList *lst, UTIL_ERR *e);
 
 // ########################### Linked Lists ###########################
 
 // ########################### Hash Table ###########################
 // ########################### Hash Table ###########################
 
+// ########################### Sorting ###########################
 
-
+// ########################### Sorting ###########################
 
 #endif

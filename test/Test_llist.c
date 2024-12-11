@@ -26,19 +26,37 @@ static void llist_free(void *d) {
     free(d);
 }
 
+static int comp(const void *d1, const void *d2) {
+    char s1[128], s2[128];
+    strcpy(s1, (char*)d1);
+    strcpy(s2, (char*)d2);
+    
+    int sum1 = 0, sum2 = 0;
+    char *d1_ptr = s1, *d2_ptr = s2;
+    while (d1_ptr) {
+        sum1++;
+        d1_ptr++;
+    }
+    while (d2_ptr) {
+        sum2++;
+        d2_ptr++;
+    }
+    return sum1 - sum2;
+}
+
 static void llist_print(FILE *f, void *d) {
     fprintf(f, "%s\n", (char*)d);
 }
 
-
 void test_function_llist_new(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "test list with strings", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, comp,  "test list with strings", &e);
     TEST_ASSERT_TRUE(e==E_SUCCESS);
     TEST_ASSERT_NOT_NULL(lst);
     TEST_ASSERT_NOT_NULL(lst->free);
     TEST_ASSERT_NOT_NULL(lst->copydata);
+    TEST_ASSERT_NOT_NULL(lst->compare);
     TEST_ASSERT_NULL(lst->head);
     TEST_ASSERT_NULL(lst->tail);
     TEST_ASSERT_EQUAL_INT32(0, lst->cnt);
@@ -51,7 +69,7 @@ void test_function_llist_new(void) {
 void test_function_llist_push(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "test list with strings", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "test list with strings", &e);
     aputil_llist_push(lst,llist_data("the tail!"));
     for (int i = 1; i<10; i++) {
         char tmp[64] = {0};
@@ -71,7 +89,7 @@ void test_function_llist_push(void) {
 void test_function_llist_pop(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "test list with strings", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "test list with strings", &e);
     char buff[64];
 
     aputil_llist_push(lst,llist_data("doomed to die!"));
@@ -112,7 +130,7 @@ void test_function_llist_pop(void) {
 void test_function_llist_push_back(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "test list with strings", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "test list with strings", &e);
     aputil_llist_push_back(lst,llist_data("the head!"));
     for (int i = 1; i<10; i++) {
         char tmp[64] = {0};
@@ -133,7 +151,7 @@ void test_function_llist_push_back(void) {
 void test_function_llist_pop_back(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "test list with strings", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "test list with strings", &e);
     char buff[64];
 
     aputil_llist_push_back(lst,llist_data("doomed to die!"));
@@ -174,7 +192,7 @@ static bool llist_data_compare(const void *s1, const void *s2) {
 void test_function_llist_in(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_in test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_in test", &e);
 
     for (int i = 0; i<20; i++) {
         char tmp[64] = {0};
@@ -198,7 +216,7 @@ void test_function_llist_in(void) {
 void test_function_llist_delete(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "delete from front", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "delete from front", &e);
 
     // delete from front
     for (int i = 0; i<5; i++) {
@@ -266,7 +284,7 @@ void test_function_llist_delete(void) {
 void test_function_llist_clear(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_clear test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_clear test", &e);
 
     for (int i = 0; i<20; i++) {
         char tmp[64] = {0};
@@ -288,7 +306,7 @@ void test_function_llist_clear(void) {
 void test_function_llist_copy_node(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_clear test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_clear test", &e);
 
     for (int i = 0; i<3; i++) {
         char tmp[64] = {0};
@@ -322,7 +340,7 @@ void test_function_llist_copy_node(void) {
 void test_function_llist_copy(void) {
 
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_copy test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_copy test", &e);
 
     for (int i = 0; i<20; i++) {
         char tmp[64] = {0};
@@ -381,7 +399,7 @@ static void llist_mapfunc(void *d) {
 
 void test_function_llist_map(void) {
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_map test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_map test", &e);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     for (int i = 0; i<5; i++) {
@@ -400,7 +418,7 @@ void test_function_llist_map(void) {
 
 void test_function_llist_map_new(void) {
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_map_new test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_map_new test", &e);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     for (int i = 0; i<5; i++) {
@@ -432,7 +450,7 @@ static bool llist_filter(void *d) {
 
 void test_function_llist_filter(void) {
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_filter test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_filter test", &e);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     for (int i = 0; i<10; i++) {
@@ -452,7 +470,7 @@ void test_function_llist_filter(void) {
 
 void test_function_llist_nodeswap(void) {
     UTIL_ERR e = E_SUCCESS;
-    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, "llist_nodeswap test", &e);
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_nodeswap test", &e);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
 
     for (int i = 0; i<2; i++) {
@@ -485,11 +503,11 @@ int main(void) {
     RUN_TEST(test_function_llist_delete);
     RUN_TEST(test_function_llist_clear);
     RUN_TEST(test_function_llist_copy_node);
-     RUN_TEST(test_function_llist_copy);
-     RUN_TEST(test_function_llist_map);
-     RUN_TEST(test_function_llist_map_new);
-     RUN_TEST(test_function_llist_filter);
-     RUN_TEST(test_function_llist_nodeswap);
+    RUN_TEST(test_function_llist_copy);
+    RUN_TEST(test_function_llist_map);
+    RUN_TEST(test_function_llist_map_new);
+    RUN_TEST(test_function_llist_filter);
+    RUN_TEST(test_function_llist_nodeswap);
 
     return UNITY_END();
 }
