@@ -486,6 +486,36 @@ void test_function_llist_nodeswap(void) {
     aputil_llist_free(lst, false);   
 }
 
+static void print_all_strings(APUTIL_LList *lst) {
+    APUTIL_Node *cur = lst->head;
+    while (cur) {
+        llist_print(stdout, cur->data);
+        cur = cur->next;
+    }
+}
+
+void test_function_llist_reverse(void) {
+    UTIL_ERR e = E_SUCCESS;
+    APUTIL_LList *lst = aputil_llist_new(llist_free, llist_data, NULL,  "llist_reverse test", &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    for (int i = 0; i<20; i++) {
+        char tmp[64] = {0};
+        sprintf(tmp, "the %dth string!", i);
+        aputil_llist_push(lst,llist_data(tmp));
+    }
+    printf("before reverse:\n");
+    print_all_strings(lst);
+
+    e = aputil_llist_reverse(lst);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    
+    printf("after reverse:\n");
+    print_all_strings(lst);
+
+    aputil_llist_free(lst, false);
+}
+
 
 
 int main(void) {
@@ -493,7 +523,6 @@ int main(void) {
     
     UNITY_BEGIN();
 
-    // linked list
     RUN_TEST(test_function_llist_new);
     RUN_TEST(test_function_llist_push);
     RUN_TEST(test_function_llist_pop);
@@ -508,6 +537,7 @@ int main(void) {
     RUN_TEST(test_function_llist_map_new);
     RUN_TEST(test_function_llist_filter);
     RUN_TEST(test_function_llist_nodeswap);
+    RUN_TEST(test_function_llist_reverse);
 
     return UNITY_END();
 }

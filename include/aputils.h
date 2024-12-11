@@ -219,6 +219,8 @@ APUTIL_LList *aputil_llist_filter(const APUTIL_LList *lst, bool(*filterfunc)(voi
 UTIL_ERR aputil_llist_nodeswap(APUTIL_Node *n1, APUTIL_Node *n2);
 // is the list sorted
 bool aputil_llist_is_sorted(APUTIL_LList *lst, UTIL_ERR *e);
+// reverse list in place
+UTIL_ERR aputil_llist_reverse(APUTIL_LList *lst);
 
 // ########################### Linked Lists ###########################
 

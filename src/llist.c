@@ -479,3 +479,20 @@ bool aputil_llist_is_sorted(APUTIL_LList *lst, UTIL_ERR *e) {
     return true;
 }
 
+UTIL_ERR aputil_llist_reverse(APUTIL_LList *lst) {
+    if (!lst) return E_EMPTY_OBJ;
+    if (!lst->head) return E_NODATA;
+    if (lst->cnt == 1) return E_SUCCESS;
+    
+    // go from both sides swapping nodes
+    APUTIL_Node *front = lst->head, *back = lst->tail;
+    do {
+        aputil_llist_nodeswap(front, back);
+        front = front->next;
+        back = back->prev;
+    } while (front != back && front->prev != back);
+
+    return E_SUCCESS;
+    
+}
+
