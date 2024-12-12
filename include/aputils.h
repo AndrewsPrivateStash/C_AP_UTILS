@@ -79,9 +79,13 @@ UTIL_ERR vector_map(Vector *v, void(*mapfunc)(void*));
 // if data contains pointers, only the pointers are copied
 Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
-Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e);
+Vector *vector_filter(const Vector *v, bool(*filter)(void*), UTIL_ERR *e);
 // check for an element in the vector and return idx if found, otherwise -1
-intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UTIL_ERR *e);
+intmax_t vector_in(const Vector *v, void *elem, bool(*equal)(void*, void*), UTIL_ERR *e);
+// swap the two index data
+UTIL_ERR vector_swap(Vector *v, size_t idx1, size_t idx2);
+// reverse the vector
+UTIL_ERR vector_reverse(Vector *v);
 
 //////////////////// generic vector ////////////////////
 
@@ -120,9 +124,13 @@ UTIL_ERR vec_i32_map(Vec_i32 *v, void(*mapfunc)(int32_t*));
 // map the supplied function pointer over the vector elements (return copy)
 Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
-Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e);
+Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*filter)(int32_t), UTIL_ERR *e);
 // check for an element in the vector and return idx if found, otherwise -1
-intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int32_t), UTIL_ERR *e);
+intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*equal)(int32_t, int32_t), UTIL_ERR *e);
+// swap the two index data
+UTIL_ERR vec_i32_swap(Vec_i32 *v, size_t idx1, size_t idx2);
+// reverse the vector
+UTIL_ERR vec_i32_reverse(Vec_i32 *v);
 
 //////////////////// int32 vector ////////////////////
 
@@ -161,9 +169,13 @@ UTIL_ERR vec_char_map(Vec_char *v, void(*mapfunc)(char*));
 // map the supplied function pointer over the vector elements (return copy)
 Vec_char *vec_char_map_new(const Vec_char *v, void(*mapfunc)(char*), UTIL_ERR *e);
 // return new vector with elements filtered based on passed function pointer
-Vec_char *vec_char_filter(const Vec_char *v, bool(*mapfunc)(char), UTIL_ERR *e);
+Vec_char *vec_char_filter(const Vec_char *v, bool(*filter)(char), UTIL_ERR *e);
 // check for an element in the vector and return idx if found, otherwise -1
-intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), UTIL_ERR *e);
+intmax_t vec_char_in(const Vec_char *v, char elem, bool(*equal)(char, char), UTIL_ERR *e);
+// swap the two index data
+UTIL_ERR vec_char_swap(Vec_char *v, size_t idx1, size_t idx2);
+// reverse the vector
+UTIL_ERR vec_char_reverse(Vec_char *v);
 
 //////////////////// char vector ////////////////////
 UTIL_ERR vector_sort(void *vec, VECTYPE type, int (*compare)(const void*, const void*));
@@ -239,5 +251,6 @@ UTIL_ERR aputil_llist_reverse(APUTIL_LList *lst);
 // ########################### Sorting ###########################
 
 // ########################### Sorting ###########################
+
 
 #endif

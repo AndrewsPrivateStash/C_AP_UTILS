@@ -5,11 +5,9 @@
  *      > assumes all elements are of the same type
  * 
  *  i32 vector
- *  char vector
+ *  char vector (bytes), also a poor man's string
  *      
  *      ToDo:
- *          - swap
- *          - reverse
  */
 
 #include "../include/aputils.h"
@@ -242,12 +240,12 @@ Vector *vector_map_new(const Vector *v, void(*mapfunc)(void*), UTIL_ERR *e) {
 }
 
 
-Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
+Vector *vector_filter(const Vector *v, bool(*filter)(void*), UTIL_ERR *e) {
     if (!v) {
         *e = E_EMPTY_OBJ;
         return (Vector*)0;
     }
-    if (!mapfunc) {
+    if (!filter) {
         *e = E_EMPTY_FUNC;
         return (Vector*)0;
     }
@@ -260,7 +258,7 @@ Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
 
     UTIL_ERR err = E_SUCCESS, e_get = E_SUCCESS;
     for (size_t i = 0; i<v->size; i++) {
-        if (mapfunc(vector_get(v, i, &e_get))) {
+        if (filter(vector_get(v, i, &e_get))) {
             err = vector_add_back(new_vec, vector_get(v, i, &e_get));
             if (err != E_SUCCESS) {
                 *e = err;
@@ -275,7 +273,7 @@ Vector *vector_filter(const Vector *v, bool(*mapfunc)(void*), UTIL_ERR *e) {
 }
 
 
-intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UTIL_ERR *e) {
+intmax_t vector_in(const Vector *v, void *elem, bool(*equal)(void*, void*), UTIL_ERR *e) {
     if (!v) {
         *e = E_EMPTY_OBJ;
         return -1;
@@ -286,7 +284,7 @@ intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UT
         return -1;
     }
 
-    if (!mapfunc) {
+    if (!equal) {
         *e = E_EMPTY_FUNC;
         return -1;
     }
@@ -295,11 +293,59 @@ intmax_t vector_in(const Vector *v, void *elem, bool(*mapfunc)(void*, void*), UT
     for (size_t i = 0; i < v->size; i++) {
         void *cmp_elem = vector_get(v, i, &err_get);
         if (err_get != E_SUCCESS) continue;
-        if (mapfunc(elem, cmp_elem)) return i;
+        if (equal(elem, cmp_elem)) return i;
     }
 
     return -1;
 }
+
+
+UTIL_ERR vector_swap(Vector *v, size_t idx1, size_t idx2) {
+    if (!v) return E_EMPTY_OBJ;
+    if (idx1 >= v->size || idx2 >= v->size) return E_OUTOFBOUNDS;
+
+    void *tmp = malloc(v->elem_size);
+
+    if (!memcpy(
+            tmp,
+            (char*)v->data + idx1 * v->elem_size,
+            v->elem_size
+        )
+    ) {free(tmp); return E_MEMCOPY;}
+
+    if (!memcpy(
+            (char*)v->data + idx1 * v->elem_size,
+            (char*)v->data + idx2 * v->elem_size,
+            v->elem_size
+        )
+    ) {free(tmp); return E_MEMCOPY;}
+    
+
+    if (!memcpy(
+            (char*)v->data + idx2 * v->elem_size,
+            tmp,
+            v->elem_size
+        )
+    ) {free(tmp); return E_MEMCOPY;}
+    
+    return E_SUCCESS;
+}
+
+
+UTIL_ERR vector_reverse(Vector *v) {
+    if (!v) return E_EMPTY_OBJ;
+    if (v->size == 0) return E_NODATA;
+    if (v->size == 1) return E_SUCCESS;
+
+    UTIL_ERR e = E_SUCCESS;
+    for (size_t f = 0, b = v->size-1; f < b; f++, b--) {
+        e = vector_swap(v, f, b);
+        if (e) return e;
+    }
+
+    return E_SUCCESS;
+}
+
 
 // ###################### GENERIC VECTOR ######################
 
@@ -494,12 +540,12 @@ Vec_i32 *vec_i32_map_new(const Vec_i32 *v, void(*mapfunc)(int32_t*), UTIL_ERR *e
 }
 
 
-Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) {
+Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*filter)(int32_t), UTIL_ERR *e) {
     if (!v) {
         *e = E_EMPTY_OBJ;
         return (Vec_i32*)0;
     }
-    if (!mapfunc) {
+    if (!filter) {
         *e = E_EMPTY_FUNC;
         return (Vec_i32*)0;
     }
@@ -512,7 +558,7 @@ Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) 
 
     UTIL_ERR err = E_SUCCESS, e_get = E_SUCCESS;
     for (size_t i = 0; i<v->size; i++) {
-        if (mapfunc(vec_i32_get(v, i, &e_get))) {
+        if (filter(vec_i32_get(v, i, &e_get))) {
             err = vec_i32_add_back(new_vec, vec_i32_get(v, i, &e_get));
             if (err != E_SUCCESS) {
                 *e = err;
@@ -526,7 +572,7 @@ Vec_i32 *vec_i32_filter(const Vec_i32 *v, bool(*mapfunc)(int32_t), UTIL_ERR *e) 
 }
 
 
-intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int32_t), UTIL_ERR *e) {
+intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*equal)(int32_t, int32_t), UTIL_ERR *e) {
     if (!v) {
         *e = E_EMPTY_OBJ;
         return -1;
@@ -537,14 +583,41 @@ intmax_t vec_i32_in(const Vec_i32 *v, int32_t elem, bool(*mapfunc)(int32_t, int3
         int32_t cmp_elem = vec_i32_get(v, i, &err_get);
         if (err_get != E_SUCCESS) continue;
 
-        if (!mapfunc) {
+        if (!equal) {
             if (elem == cmp_elem) return i;  // default int compare if no function passed
         } else {
-            if (mapfunc(elem, cmp_elem)) return i;
+            if (equal(elem, cmp_elem)) return i;
         }
     }
 
     return -1;
+}
+
+
+UTIL_ERR vec_i32_swap(Vec_i32 *v, size_t idx1, size_t idx2) {
+    if (!v) return E_EMPTY_OBJ;
+    if (idx1 >= v->size || idx2 >= v->size) return E_OUTOFBOUNDS;
+    int32_t tmp = v->data[idx1];
+    v->data[idx1] = v->data[idx2];
+    v->data[idx2] = tmp;
+
+    return E_SUCCESS;
+
+}
+
+
+UTIL_ERR vec_i32_reverse(Vec_i32 *v) {
+    if (!v) return E_EMPTY_OBJ;
+    if (v->size == 0) return E_NODATA;
+    if (v->size == 1) return E_SUCCESS;
+
+    UTIL_ERR e = E_SUCCESS;
+    for (size_t f = 0, b = v->size-1; f < b; f++, b--) {
+        e = vec_i32_swap(v, f, b);
+        if (e) return e;
+    }
+
+    return E_SUCCESS;
 }
 
 // ###################### i32 VECTOR ######################
@@ -791,6 +864,33 @@ intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), U
     }
 
     return -1;
+}
+
+
+UTIL_ERR vec_char_swap(Vec_char *v, size_t idx1, size_t idx2) {
+    if (!v) return E_EMPTY_OBJ;
+    if (idx1 >= v->size || idx2 >= v->size) return E_OUTOFBOUNDS;
+    char tmp = v->data[idx1];
+    v->data[idx1] = v->data[idx2];
+    v->data[idx2] = tmp;
+
+    return E_SUCCESS;
+    
+}
+
+
+UTIL_ERR vec_char_reverse(Vec_char *v) {
+    if (!v) return E_EMPTY_OBJ;
+    if (v->size == 0) return E_NODATA;
+    if (v->size == 1) return E_SUCCESS;
+
+    UTIL_ERR e = E_SUCCESS;
+    for (size_t f = 0, b = v->size-1; f < b; f++, b--) {
+        e = vec_char_swap(v, f, b);
+        if (e) return e;
+    }
+
+    return E_SUCCESS;
 }
 
 // ###################### char VECTOR ######################

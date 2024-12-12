@@ -338,6 +338,49 @@ void test_function_vector_in(void) {
 
 }
 
+
+void test_function_vector_swap(void) {
+    UTIL_ERR e = E_SUCCESS;
+
+    int tmp[] = {0,100};
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<2; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+    e = vector_swap(tstvec, 0, 1);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(0, *(int*)vector_get(tstvec, 1, &e));
+    TEST_ASSERT_EQUAL_INT32(100, *(int*)vector_get(tstvec, 0, &e));
+
+    vector_free(tstvec);
+
+}
+
+
+void test_function_vector_reverse(void) {
+    UTIL_ERR e = E_SUCCESS;
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<10; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+    e = vector_reverse(tstvec);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(10, *(int*)vector_get(tstvec, 0, &e));
+    TEST_ASSERT_EQUAL_INT32(1, *(int*)vector_get(tstvec, 9, &e));
+
+    e = vector_reverse(tstvec);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(1, *(int*)vector_get(tstvec, 0, &e));
+    TEST_ASSERT_EQUAL_INT32(10, *(int*)vector_get(tstvec, 9, &e));
+
+    vector_free(tstvec);
+
+}
+
+
+
 //################ Generic Vector ################
 //################ i32 Vector ################
 
@@ -637,6 +680,46 @@ void test_function_vec_i32_in(void) {
     is_fnd = vec_i32_in(tstvec, nfnd, NULL, &e);
     TEST_ASSERT_TRUE(e == E_SUCCESS);
     TEST_ASSERT_EQUAL_INT32(-1, is_fnd);
+
+    vec_i32_free(tstvec);
+
+}
+
+void test_function_vec_i32_swap(void) {
+    UTIL_ERR e = E_SUCCESS;
+
+    int tmp[] = {0,100};
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<2; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+    e = vec_i32_swap(tstvec, 0, 1);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(0, vec_i32_get(tstvec, 1, &e));
+    TEST_ASSERT_EQUAL_INT32(100, vec_i32_get(tstvec, 0, &e));
+
+    vec_i32_free(tstvec);
+
+}
+
+
+void test_function_vec_i32_reverse(void) {
+    UTIL_ERR e = E_SUCCESS;
+
+    int tmp[] = {1,2,3,4,5,6,7,8,9,10};
+    Vec_i32 *tstvec = vec_i32_new(1);
+    for (int i = 0; i<10; i++) {
+        vec_i32_add_back(tstvec, tmp[i]);
+    }
+    e = vec_i32_reverse(tstvec);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(10, vec_i32_get(tstvec, 0, &e));
+    TEST_ASSERT_EQUAL_INT32(1, vec_i32_get(tstvec, 9, &e));
+
+    e = vec_i32_reverse(tstvec);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_INT32(1, vec_i32_get(tstvec, 0, &e));
+    TEST_ASSERT_EQUAL_INT32(10, vec_i32_get(tstvec, 9, &e));
 
     vec_i32_free(tstvec);
 
@@ -945,6 +1028,47 @@ void test_function_vec_char_in(void) {
 
 }
 
+
+void test_function_vec_char_swap(void) {
+    UTIL_ERR e = E_SUCCESS;
+
+    char tmp[] = {'a','z'};
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<2; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+    e = vec_char_swap(tstvec, 0, 1);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR('a', vec_char_get(tstvec, 1, &e));
+    TEST_ASSERT_EQUAL_CHAR('z', vec_char_get(tstvec, 0, &e));
+
+    vec_char_free(tstvec);
+
+}
+
+
+void test_function_vec_char_reverse(void) {
+    UTIL_ERR e = E_SUCCESS;
+
+    char tmp[] = "abcdefghijklmnopqrstuvwxyz";
+    Vec_char *tstvec = vec_char_new(1);
+    for (int i = 0; i<26; i++) {
+        vec_char_add_back(tstvec, tmp[i]);
+    }
+    e = vec_char_reverse(tstvec);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR('a', vec_char_get(tstvec, 25, &e));
+    TEST_ASSERT_EQUAL_CHAR('z', vec_char_get(tstvec, 0, &e));
+
+    e = vec_char_reverse(tstvec);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    TEST_ASSERT_EQUAL_CHAR('z', vec_char_get(tstvec, 25, &e));
+    TEST_ASSERT_EQUAL_CHAR('a', vec_char_get(tstvec, 0, &e));
+
+    vec_char_free(tstvec);
+
+}
+
 //################ char Vector ################
 
 
@@ -1052,6 +1176,8 @@ int main(void) {
     RUN_TEST(test_function_vector_map_new);
     RUN_TEST(test_function_vector_filter);
     RUN_TEST(test_function_vector_in);
+    RUN_TEST(test_function_vector_swap);
+    RUN_TEST(test_function_vector_reverse);
 
     // i32 vector
     RUN_TEST(test_function_vec_i32_new);
@@ -1067,6 +1193,8 @@ int main(void) {
     RUN_TEST(test_function_vec_i32_map_new);
     RUN_TEST(test_function_vec_i32_filter);
     RUN_TEST(test_function_vec_i32_in);
+    RUN_TEST(test_function_vec_i32_swap);
+    RUN_TEST(test_function_vec_i32_reverse);
 
     // char vector
     RUN_TEST(test_function_vec_char_new);
@@ -1082,6 +1210,8 @@ int main(void) {
     RUN_TEST(test_function_vec_char_map_new);
     RUN_TEST(test_function_vec_char_filter);
     RUN_TEST(test_function_vec_char_in);
+    RUN_TEST(test_function_vec_char_swap);
+    RUN_TEST(test_function_vec_char_reverse);
 
     // sort
     RUN_TEST(test_function_vector_sort);
