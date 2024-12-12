@@ -328,6 +328,7 @@ UTIL_ERR vector_swap(Vector *v, size_t idx1, size_t idx2) {
         )
     ) {free(tmp); return E_MEMCOPY;}
     
+    free(tmp);
     return E_SUCCESS;
 }
 
