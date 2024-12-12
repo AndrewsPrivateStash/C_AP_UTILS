@@ -8,7 +8,7 @@
  *  char vector
  *      
  *      ToDo:
- *          - sort (use qsort)
+ *          - swap
  *          - reverse
  */
 
@@ -794,3 +794,43 @@ intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), U
 }
 
 // ###################### char VECTOR ######################
+
+
+// sort a vector in place
+UTIL_ERR vector_sort(void *vec, VECTYPE type, int (*compare)(const void*, const void*)) {
+
+    switch (type) {
+        case vector: {
+            qsort(
+                ((Vector*)vec)->data,
+                ((Vector*)vec)->size,
+                ((Vector*)vec)->elem_size,
+                compare
+            );
+            break;
+        }
+        case vec_i32: {
+            qsort(
+                ((Vec_i32*)vec)->data,
+                ((Vec_i32*)vec)->size,
+                sizeof(int32_t),
+                compare
+            );
+            break;
+        }
+        case vec_char: {
+            qsort(
+                ((Vec_i32*)vec)->data,
+                ((Vec_i32*)vec)->size,
+                sizeof(char),
+                compare
+            );
+            break;
+        }
+        default: {
+            return E_BAD_TYPE;
+        }
+    }
+
+    return E_SUCCESS;
+}

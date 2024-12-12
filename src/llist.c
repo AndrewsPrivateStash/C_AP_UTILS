@@ -3,8 +3,7 @@
  *      > data is void pointer
  *      
  *      ToDo
- *          - sort
- *          - reverse
+ 
  */
 
 #include "../include/aputils.h"

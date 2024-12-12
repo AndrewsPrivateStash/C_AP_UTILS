@@ -26,6 +26,7 @@ enum _UTILERR {
     E_NOOP = -7,                // no operation to perform
     E_NODATA = -8,
     E_DOESNT_EXIST = -9,        // element doesn't exist
+    E_BAD_TYPE = -10,
 };
 typedef enum _UTILERR UTIL_ERR;
 const char *UTIL_ERR_PRINT(UTIL_ERR);
@@ -33,6 +34,13 @@ const char *UTIL_ERR_PRINT(UTIL_ERR);
 
 
 // ########################### VECTORS ###########################
+
+enum vec_type {
+    vector = 0,
+    vec_i32 = 1,
+    vec_char = 2,
+};
+typedef enum vec_type VECTYPE;
 
 //////////////////// generic vector ////////////////////
 typedef struct {
@@ -85,7 +93,7 @@ typedef struct {
     size_t cap;
 } Vec_i32;
 
-// make a new generic vector (starting capacity)
+// make a new i32 vector (starting capacity)
 Vec_i32 *vec_i32_new(size_t);
 // free the vector and its data
 void vec_i32_free(Vec_i32*);
@@ -158,6 +166,7 @@ Vec_char *vec_char_filter(const Vec_char *v, bool(*mapfunc)(char), UTIL_ERR *e);
 intmax_t vec_char_in(const Vec_char *v, char elem, bool(*mapfunc)(char, char), UTIL_ERR *e);
 
 //////////////////// char vector ////////////////////
+UTIL_ERR vector_sort(void *vec, VECTYPE type, int (*compare)(const void*, const void*));
 
 // ########################### VECTORS ###########################
 

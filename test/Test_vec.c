@@ -814,6 +814,7 @@ void test_function_vec_char_delete_idx(void) {
 
 
 static void print_chars(char e, FILE *f) {
+    if (e == '\0') return;
     fprintf(f, "%c ", e);
 }
 
@@ -946,6 +947,92 @@ void test_function_vec_char_in(void) {
 
 //################ char Vector ################
 
+
+
+static int vec_comp(const void *d1, const void *d2) {
+    return *(int*)d1 - *(int*)d2;
+}
+
+static int vec_char_comp(const void *d1, const void *d2) {
+    return *(char*)d1 - *(char*)d2;
+}
+
+static void print_i32ints(int32_t i, FILE *f) {
+    fprintf(f, "%d ", i);
+}
+
+void test_function_vector_sort(void) {
+
+    // VECTOR
+    UTIL_ERR e = E_SUCCESS;
+    int tmp[] = {5, 1000, 20, 0, 42, 777};
+    int vec_cnt = sizeof(tmp)/sizeof(tmp[0]);
+
+    Vector *tstvec = vector_new(sizeof(int), 1);
+    for (int i = 0; i<vec_cnt; i++) {
+        vector_add_back(tstvec, &tmp[i]);
+    }
+    printf("before sort (Vector):\n");
+    e = vector_print(tstvec, stdout, print_ints);
+    printf("\n");
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    e = vector_sort(tstvec, vector, vec_comp);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    printf("after sort (Vector):\n");
+    e = vector_print(tstvec, stdout, print_ints);
+    printf("\n");
+
+    vector_free(tstvec);
+
+    //I32
+    int tmpi32[] = {5, 1000, 20, 0, 42, 777};
+    int veci32_cnt = sizeof(tmpi32)/sizeof(tmpi32[0]);
+
+    Vec_i32 *tsti32 = vec_i32_new(1);
+    for (int i = 0; i<veci32_cnt; i++) {
+        vec_i32_add_back(tsti32, tmpi32[i]);
+    }
+
+    printf("before sort (I32):\n");
+    e = vec_i32_print(tsti32, stdout, print_i32ints);
+    printf("\n");
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    e = vector_sort(tsti32, vec_i32, vec_comp);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    printf("after sort (I32):\n");
+    e = vec_i32_print(tsti32, stdout, print_i32ints);
+    printf("\n");
+
+    vec_i32_free(tsti32);
+
+    //CHAR
+    char tmpchar[] = "a char string sort test";
+    int vecchar_cnt = sizeof(tmpchar)/sizeof(tmpchar[0]);
+
+    Vec_char *tstchar = vec_char_new(1);
+    for (int i = 0; i<vecchar_cnt; i++) {
+        vec_char_add_back(tstchar, tmpchar[i]);
+    }
+
+    printf("before sort (char):\n");
+    e = vec_char_print(tstchar, stdout, print_chars);
+    printf("\n");
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+
+    e = vector_sort(tstchar, vec_char, vec_char_comp);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    printf("after sort (char):\n");
+    e = vec_char_print(tstchar, stdout, print_chars);
+    printf("\n");
+
+    vec_char_free(tstchar);
+
+}
+
+
+
 int main(void) {
 
     
@@ -995,6 +1082,9 @@ int main(void) {
     RUN_TEST(test_function_vec_char_map_new);
     RUN_TEST(test_function_vec_char_filter);
     RUN_TEST(test_function_vec_char_in);
+
+    // sort
+    RUN_TEST(test_function_vector_sort);
 
     return UNITY_END();
 }
