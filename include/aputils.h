@@ -15,6 +15,7 @@
 
 
 
+// if added to, update common.c
 enum _UTILERR {
     E_SUCCESS = 0,
     E_EMPTY_OBJ = -1,

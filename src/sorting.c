@@ -34,7 +34,7 @@ void bubble_sort(APUTIL_LList *lst) {
 
     /*
 
-     partition list into pairs allowing for runs of sorted data
+     partition list into runs then merge bottom up
      
      data := [ 1, 1, 3, 7, 2, 4, 5, 6, 2, 3 ]
      
