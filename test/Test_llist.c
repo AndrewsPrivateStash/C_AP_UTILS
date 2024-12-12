@@ -517,6 +517,48 @@ void test_function_llist_reverse(void) {
 }
 
 
+static int list_comp(const void *d1, const void* d2) {
+    return *(int*)d1 - *(int*)d2;
+}
+
+static void print_int_list(const APUTIL_LList *lst) {
+    APUTIL_Node *cur = lst->head;
+    fprintf(stdout, "[ ");
+    while (cur) {
+        if (cur->next) {
+            fprintf(stdout, "%d, ", *(int*)cur->data);
+        } else {
+            fprintf(stdout, "%d", *(int*)cur->data);
+        }
+        cur = cur->next;
+    }
+    fprintf(stdout, " ]\n");
+}
+
+void test_function_llist_merge_sort(void) {
+    // to ensure merge sort exists in the aputils header
+    UTIL_ERR e = E_SUCCESS;
+    APUTIL_LList *lst = aputil_llist_new(NULL, NULL, list_comp, "merge_sort test", &e);
+    TEST_ASSERT_TRUE(e == E_SUCCESS);
+    int vals[] = {1, 1, 3, 7, 2, 4, 5, 6, 2, 3};
+    int cnt = sizeof(vals) / sizeof(vals[0]);
+
+    for (int i = 0; i<cnt; i++) {
+        e = aputil_llist_push_back(lst, &vals[i]);
+        TEST_ASSERT_TRUE(e == E_SUCCESS);
+    }
+    int lst_cnt = lst->cnt;
+    printf("before sort..\n");
+    print_int_list(lst);
+    merge_sort(lst);
+    printf("after sort..\n");
+    print_int_list(lst);
+    TEST_ASSERT_EQUAL_INT32(lst_cnt, lst->cnt);
+
+    aputil_llist_free(lst, true);
+}
+
+
 
 int main(void) {
 
@@ -538,6 +580,7 @@ int main(void) {
     RUN_TEST(test_function_llist_filter);
     RUN_TEST(test_function_llist_nodeswap);
     RUN_TEST(test_function_llist_reverse);
+    RUN_TEST(test_function_llist_merge_sort);
 
     return UNITY_END();
 }

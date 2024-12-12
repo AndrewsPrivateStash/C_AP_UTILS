@@ -243,14 +243,14 @@ bool aputil_llist_is_sorted(APUTIL_LList *lst, UTIL_ERR *e);
 // reverse list in place
 UTIL_ERR aputil_llist_reverse(APUTIL_LList *lst);
 
+// sort the list in-place using iterative merge sort with runs
+void merge_sort(APUTIL_LList *lst);
+
 // ########################### Linked Lists ###########################
 
 // ########################### Hash Table ###########################
 // ########################### Hash Table ###########################
 
-// ########################### Sorting ###########################
-
-// ########################### Sorting ###########################
 
 
 #endif
