@@ -18,6 +18,7 @@ const char *UTIL_ERR_PRINT(UTIL_ERR e) {
         case -7: return "E_NOOP";
         case -8: return "E_NODATA";
         case -9: return "E_DOESNT_EXIST";
+        case -10: return "E_BAD_TYPE";
         default:
     }
     return "UNDEF";
